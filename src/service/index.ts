@@ -57,6 +57,7 @@ export interface User {
   followers: Author[];
   following: Author[];
   posts: Post[];
+  isFollowed?: boolean;
 }
 
 export interface MessageDTO {
@@ -72,4 +73,13 @@ export interface ChatDTO {
   id: string;
   users: Author[];
   messages: MessageDTO[];
+}
+
+export interface PostImage {
+  id: string;
+  postId: string;
+  s3Key: string;
+  index: number;
+  createdAt: Date;
+  url: string;
 }

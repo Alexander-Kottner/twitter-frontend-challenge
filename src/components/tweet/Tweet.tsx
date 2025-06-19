@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import {StyledTweetContainer} from "./TweetContainer";
 import AuthorData from "./user-post-data/AuthorData";
-import type {Post, User} from "../../service";
+import type {Post, PostImage} from "../../service";
 import {StyledReactionsContainer} from "./ReactionsContainer";
 import Reaction from "./reaction/Reaction";
 import {useHttpRequestService} from "../../service/HttpRequestService";
@@ -12,6 +12,7 @@ import DeletePostModal from "./delete-post-modal/DeletePostModal";
 import ImageContainer from "./tweet-image/ImageContainer";
 import CommentModal from "../comment/comment-modal/CommentModal";
 import {useNavigate} from "react-router-dom";
+import {useCurrentUser} from "../../hooks/useCurrentUser";
 
 interface TweetProps {
   post: Post;
@@ -21,25 +22,48 @@ const Tweet = ({post}: TweetProps) => {
   const [actualPost, setActualPost] = useState<Post>(post);
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
   const [showCommentModal, setShowCommentModal] = useState<boolean>(false);
+  const [postImages, setPostImages] = useState<string[]>([]);
+  const [imagesLoading, setImagesLoading] = useState<boolean>(false);
   const service = useHttpRequestService();
   const navigate = useNavigate();
-  const [user, setUser] = useState<User>()
+  const { currentUser } = useCurrentUser();
 
   useEffect(() => {
-    handleGetUser().then(r => setUser(r))
-  }, []);
+    // Reset images first when post changes
+    setPostImages([]);
+    setImagesLoading(false);
+    
+    // Fetch post images if the post has images
+    if (post.images && post.images.length > 0) {
+      fetchPostImages();
+    }
+  }, [post.id]);
 
-  const handleGetUser = async () => {
-    return await service.me()
-  }
+  const fetchPostImages = async () => {
+    try {
+      setImagesLoading(true);
+      const images: PostImage[] = await service.getPostImages(post.id);
+      // Sort images by index and extract URLs
+      const sortedImageUrls = images
+        .sort((a, b) => a.index - b.index)
+        .map(img => img.url);
+      setPostImages(sortedImageUrls);
+    } catch (error) {
+      console.error("Error fetching post images:", error);
+      // Fallback to post.images if available
+      setPostImages(post.images || []);
+    } finally {
+      setImagesLoading(false);
+    }
+  };
 
   const getCountByType = (type: string): number => {
     return actualPost?.reactions?.filter((r) => r.type === type).length ?? 0;
   };
 
   const handleReaction = async (type: string) => {
-    const reacted = actualPost.reactions.find(
-        (r) => r.type === type && r.userId === user?.id
+    const reacted = actualPost.reactions?.find(
+        (r) => r.type === type && r.userId === currentUser?.id
     );
     if (reacted) {
       await service.deleteReaction(reacted.id);
@@ -51,8 +75,10 @@ const Tweet = ({post}: TweetProps) => {
   };
 
   const hasReactedByType = (type: string): boolean => {
-    return actualPost.reactions.some(
-        (r) => r.type === type && r.userId === user?.id
+    return (
+      actualPost?.reactions?.some(
+        (r) => r.type === type && r.userId === currentUser?.id
+      ) ?? false
     );
   };
 
@@ -72,7 +98,7 @@ const Tweet = ({post}: TweetProps) => {
               createdAt={post.createdAt}
               profilePicture={post.author.profilePicture}
           />
-          {post.authorId === user?.id && (
+          {post.authorId === currentUser?.id && (
               <>
                 <DeletePostModal
                     show={showDeleteModal}
@@ -92,9 +118,16 @@ const Tweet = ({post}: TweetProps) => {
         <StyledContainer onClick={() => navigate(`/post/${post.id}`)}>
           <p>{post.content}</p>
         </StyledContainer>
-        {post.images && post.images!.length > 0 && (
+        {/* Use fetched S3 images or show loading state */}
+        {(postImages.length > 0 || (post.images && post.images.length > 0)) && (
             <StyledContainer padding={"0 0 0 10%"}>
-              <ImageContainer images={post.images}/>
+              {!imagesLoading ? (
+                <ImageContainer images={postImages.length > 0 ? postImages : post.images || []}/>
+              ) : (
+                <StyledContainer padding={"16px"} alignItems={"center"}>
+                  <p>Loading images...</p>
+                </StyledContainer>
+              )}
             </StyledContainer>
         )}
         <StyledReactionsContainer>

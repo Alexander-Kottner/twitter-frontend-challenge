@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useState} from "react";
 import NavItem from "./navItem/NavItem";
 import Button from "../button/Button";
 import {useLocation, useNavigate} from "react-router-dom";
@@ -16,32 +16,22 @@ import {StyledContainer} from "../common/Container";
 import {StyledIconContainer} from "./IconContainer";
 import {StyledNavItemsContainer} from "./navItem/NavItemsContainer";
 import {StyledP} from "../common/text";
-import {useHttpRequestService} from "../../service/HttpRequestService";
-import {User} from "../../service";
 import ProfileLogoutPrompt from "../profile-logout/ProfileLogoutPrompt";
+import {useCurrentUser} from "../../hooks/useCurrentUser";
 
 const NavBar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [tweetModalOpen, setTweetModalOpen] = useState(false);
   const [logoutOpen, setLogoutOpen] = useState(false);
-  const service = useHttpRequestService()
-  const [user, setUser] = useState<User>()
+  const { currentUser } = useCurrentUser();
   const {t} = useTranslation();
-
-  useEffect(() => {
-    handleGetUser().then(r => setUser(r))
-  }, []);
-
-  const handleGetUser = async () => {
-    return await service.me()
-  }
 
   const handleAvatarClick = () => {
     if (window.innerWidth < 1265) {
       handleLogout();
     } else {
-      navigate(`/profile/${user?.id}`);
+      navigate(`/profile/${currentUser?.id}`);
     }
   };
 
@@ -68,11 +58,11 @@ const NavBar = () => {
             <NavItem
                 title={t("navbar.profile")}
                 onClick={() => {
-                  navigate(`/profile/${user?.id}`);
+                  navigate(`/profile/${currentUser?.id}`);
                 }}
                 icon={IconType.PROFILE}
                 selectedIcon={IconType.ACTIVE_PROFILE}
-                active={location.pathname === `/profile/${user?.id}`}
+                active={location.pathname === `/profile/${currentUser?.id}`}
             />
             <StyledTweetButton
                 onClick={() => navigate("/compose/tweet")

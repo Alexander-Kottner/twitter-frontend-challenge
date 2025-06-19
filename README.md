@@ -49,7 +49,7 @@ The next component needs the proper changes:
 
 The objective of this task is to read and comprehend how class components function. You need to understand the component lifecycle and then transform them into functional components using TypeScript. In order to complete this task, you have to apply the proper changes to the next component:
 
-- **Component**: page/post-page/PostPage.jsx
+- **Component**: pages/post-page/PostPage.tsx
 
 **Why is it important?** It's not very common nowadays to come across a project built from scratch using React class components (as they are not recommended). However, you may encounter them in older projects or libraries that have not been updated. On your journey to becoming a Master Jedi, it's important to familiarize yourself with some basic features of the old way of building components.
 

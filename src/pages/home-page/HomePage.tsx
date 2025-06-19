@@ -11,12 +11,11 @@ import { StyledUserSuggestionContainer } from "./UserSeuggestionContainer";
 const HomePage = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const query = useAppSelector((state) => state.user.query);
   const service = useHttpRequestService();
 
   const handleSetUser = async () => {
     try {
-      const data = await service.getPosts(query);
+      const data = await service.getPosts();
       dispatch(updateFeed(data));
     } catch (e) {
       navigate("/sign-in");

@@ -31,7 +31,12 @@ const CommentModal = ({ post, show, onClose }: CommentModalProps) => {
             {post.images && <ImageContainer images={post.images} />}
           </StyledContainer>
         </StyledContainer>
-        <TweetBox parentId={post.id} close={onClose} borderless />
+        <TweetBox
+          parentId={post.id}
+          close={onClose}
+          borderless
+          isCommentModal={true}
+        />
       </StyledContainer>
     </PostModal>
   );

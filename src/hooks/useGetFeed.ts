@@ -7,7 +7,6 @@ export const useGetFeed = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const posts = useAppSelector((state) => state.user.feed);
-  const query = useAppSelector((state) => state.user.query);
 
   const dispatch = useAppDispatch();
 
@@ -17,7 +16,7 @@ export const useGetFeed = () => {
     try {
       setLoading(true);
       setError(false);
-      service.getPosts(query).then((res) => {
+      service.getPosts().then((res) => {
         const updatedPosts = Array.from(new Set([...posts, ...res]));
         dispatch(updateFeed(updatedPosts));
         dispatch(setLength(updatedPosts.length));
@@ -27,7 +26,7 @@ export const useGetFeed = () => {
       setError(true);
       console.log(e);
     }
-  }, [query]);
+  }, []);
 
   return { posts, loading, error };
 };

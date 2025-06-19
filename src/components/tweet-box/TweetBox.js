@@ -15,7 +15,7 @@ import {useDispatch, useSelector} from "react-redux";
 import {User} from "../../service";
 
 const TweetBox = (props) => {
-    const {parentId, close, mobile} = props;
+    const {parentId, close, mobile, isCommentModal} = props;
     const [content, setContent] = useState("");
     const [images, setImages] = useState([]);
     const [imagesPreview, setImagesPreview] = useState([]);
@@ -41,12 +41,66 @@ const TweetBox = (props) => {
     };
     const handleSubmit = async () => {
         try {
+            // Create the post first
+            const postData = {
+                content: content
+            };
+            
+            if (parentId) {
+                postData.parentId = parentId;
+            }
+            
+            const createdPost = await httpService.createPost(postData);
+            
+            // If there are images, handle the image upload process
+            if (images.length > 0) {
+                for (let i = 0; i < images.length; i++) {
+                    const image = images[i];
+                    const fileExt = image.name.split('.').pop();
+                    
+                    // Get the S3 upload URL
+                    const uploadUrlResponse = await httpService.getImageUploadUrl(createdPost.id, fileExt, i);
+                    
+                    // Upload to S3
+                    await httpService.uploadImageToS3(uploadUrlResponse.uploadUrl, image);
+                    
+                    // Link the image to the post
+                    await httpService.linkImageToPost(createdPost.id, uploadUrlResponse.key, i);
+                }
+            }
+            
+            // Clear the form
             setContent("");
             setImages([]);
             setImagesPreview([]);
-            dispatch(setLength(length + 1));
-            const posts = await httpService.getPosts(length + 1, "", query);
-            dispatch(updateFeed(posts));
+            
+            // Update the feed based on context
+            if (parentId && !isCommentModal) {
+                // If it's a comment on PostPage, fetch comments for the specific post
+                const comments = await httpService.getCommentsByPostId(parentId);
+                const updatedPosts = Array.from(new Set([...comments])).filter(
+                    (post) => post.parentId === parentId
+                );
+                dispatch(updateFeed(updatedPosts));
+                dispatch(setLength(updatedPosts.length));
+            } else if (parentId && isCommentModal) {
+                // If it's a comment from modal, refresh the entire feed
+                dispatch(setLength(length + 1));
+                const posts = await (query === "following" 
+                    ? httpService.getFollowingPosts() 
+                    : httpService.getPosts(length + 1)
+                );
+                dispatch(updateFeed(posts));
+            } else if (!parentId) {
+                // If it's a new post, fetch posts based on current tab
+                dispatch(setLength(length + 1));
+                const posts = await (query === "following" 
+                    ? httpService.getFollowingPosts() 
+                    : httpService.getPosts(length + 1)
+                );
+                dispatch(updateFeed(posts));
+            }
+            
             close && close();
         } catch (e) {
             console.log(e);

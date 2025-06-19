@@ -99,8 +99,8 @@ const ProfilePage = () => {
         .then((res) => {
           setProfile(res);
           setFollowing(
-              res
-                  ? res?.followers.some((follower: User) => follower.id === user?.id)
+              res && res.followers
+                  ? res.followers.some((follower: User) => follower.id === user?.id)
                   : false
           );
         })
@@ -150,7 +150,7 @@ const ProfilePage = () => {
                   </StyledContainer>
                 </StyledContainer>
                 <StyledContainer width={"100%"}>
-                  {profile.followers ? (
+                  {profile ? (
                       <ProfileFeed/>
                   ) : (
                       <StyledH5>Private account</StyledH5>

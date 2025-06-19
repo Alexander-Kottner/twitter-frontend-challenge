@@ -35,25 +35,63 @@ const httpRequestService = {
       return res.data;
     }
   },
-  getPaginatedPosts: async (limit: number, after: string, query: string) => {
-    const res = await axios.get(`${url}/post/${query}`, {
+  getPaginatedPosts: async (limit?: number, before?: string, after?: string) => {
+    const params: any = {};
+    if (limit) params.limit = limit;
+    if (before) params.before = before;
+    if (after) params.after = after;
+
+    const res = await axios.get(`${url}/post`, {
       headers: {
         Authorization: localStorage.getItem("token"),
       },
-      params: {
-        limit,
-        after,
-      },
+      params,
     });
     if (res.status === 200) {
       return res.data;
     }
   },
-  getPosts: async (query: string) => {
-    const res = await axios.get(`${url}/post/${query}`, {
+  getPosts: async (limit?: number) => {
+    const params: any = {};
+    if (limit) params.limit = limit;
+
+    const res = await axios.get(`${url}/post`, {
       headers: {
         Authorization: localStorage.getItem("token"),
       },
+      params,
+    });
+    if (res.status === 200) {
+      return res.data;
+    }
+  },
+  getFollowingPosts: async (limit?: number, before?: string, after?: string) => {
+    const params: any = {};
+    if (limit) params.limit = limit;
+    if (before) params.before = before;
+    if (after) params.after = after;
+
+    const res = await axios.get(`${url}/post/following`, {
+      headers: {
+        Authorization: localStorage.getItem("token"),
+      },
+      params,
+    });
+    if (res.status === 200) {
+      return res.data;
+    }
+  },
+  getPaginatedFollowingPosts: async (limit?: number, before?: string, after?: string) => {
+    const params: any = {};
+    if (limit) params.limit = limit;
+    if (before) params.before = before;
+    if (after) params.after = after;
+
+    const res = await axios.get(`${url}/post/following`, {
+      headers: {
+        Authorization: localStorage.getItem("token"),
+      },
+      params,
     });
     if (res.status === 200) {
       return res.data;
@@ -119,7 +157,7 @@ const httpRequestService = {
   },
   followUser: async (userId: string) => {
     const res = await axios.post(
-      `${url}/follow/${userId}`,
+      `${url}/follower/follow/${userId}`,
       {},
       {
         headers: {
@@ -132,11 +170,15 @@ const httpRequestService = {
     }
   },
   unfollowUser: async (userId: string) => {
-    const res = await axios.delete(`${url}/follow/${userId}`, {
-      headers: {
-        Authorization: localStorage.getItem("token"),
-      },
-    });
+    const res = await axios.post(
+      `${url}/follower/unfollow/${userId}`,
+      {},
+      {
+        headers: {
+          Authorization: localStorage.getItem("token"),
+        },
+      }
+    );
     if (res.status === 200) {
       return res.data;
     }
@@ -306,7 +348,7 @@ const httpRequestService = {
     limit: number,
     after: string
   ) => {
-    const res = await axios.get(`${url}/post/comment/by_post/${id}`, {
+    const res = await axios.get(`${url}/comment/${id}`, {
       headers: {
         Authorization: localStorage.getItem("token"),
       },
@@ -320,7 +362,59 @@ const httpRequestService = {
     }
   },
   getCommentsByPostId: async (id: string) => {
-    const res = await axios.get(`${url}/post/comment/by_post/${id}`, {
+    const res = await axios.get(`${url}/comment/${id}`, {
+      headers: {
+        Authorization: localStorage.getItem("token"),
+      },
+    });
+    if (res.status === 200) {
+      return res.data;
+    }
+  },
+
+  getImageUploadUrl: async (postId: string, fileExt: string, index: number) => {
+    const res = await axios.get(`${url}/post/${postId}/image-upload-url`, {
+      headers: {
+        Authorization: localStorage.getItem("token"),
+      },
+      params: {
+        fileExt,
+        index,
+      },
+    });
+    if (res.status === 200) {
+      return res.data;
+    }
+  },
+
+  uploadImageToS3: async (uploadUrl: string, file: File) => {
+    await axios.put(uploadUrl, file, {
+      headers: {
+        'Content-Type': file.type || 'application/octet-stream',
+      },
+    });
+  },  
+
+  linkImageToPost: async (postId: string, s3Key: string, index: number) => {
+    const res = await axios.post(
+      `${url}/post/${postId}/image`,
+      {
+        s3Key,
+        index,
+      },
+      {
+        headers: {
+          Authorization: localStorage.getItem("token"),
+        },
+      }
+    );
+    if (res.status === 201) {
+      return res.data;
+    }
+  },
+
+  getPostImages: async (postId: string) => {
+    const res = await axios.get(`${url}/post/${postId}/images`, {
       headers: {
         Authorization: localStorage.getItem("token"),
       },

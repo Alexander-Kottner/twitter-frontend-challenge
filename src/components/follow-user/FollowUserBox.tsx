@@ -12,6 +12,7 @@ interface FollowUserBoxProps {
   name?: string;
   username?: string;
   id: string;
+  followed?: boolean;
 }
 
 const FollowUserBox = ({
@@ -19,6 +20,7 @@ const FollowUserBox = ({
                          name,
                          username,
                          id,
+                         followed
                        }: FollowUserBoxProps) => {
   const {t} = useTranslation();
   const service = useHttpRequestService()
@@ -28,7 +30,7 @@ const FollowUserBox = ({
   useEffect(() => {
     handleGetUser().then(r => {
       setUser(r)
-      setIsFollowing(r?.following.some((f: Author) => f.id === id))
+      setIsFollowing((followed || r?.following?.some((f: Author) => f.id === id)) ?? false)
     })
   }, []);
 
@@ -36,7 +38,7 @@ const FollowUserBox = ({
     return await service.me()
   }
 
-  const [isFollowing, setIsFollowing] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(followed);
 
   const handleFollow = async () => {
     if (isFollowing) {
