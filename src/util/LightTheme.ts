@@ -1,4 +1,4 @@
-export const LightTheme: Partial<Theme> = {
+export const LightTheme: Theme = {
   background: "#fff",
   colors: {
     main: "#4A99E9",

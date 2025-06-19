@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
 import Loader from "../loader/Loader";
@@ -29,8 +29,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
   // If we have a token but no user data after loading is complete,
   // the token might be invalid, so clear it and redirect to sign-in
-  if (!userLoading && !currentUser) {
-    localStorage.removeItem("token");
+  // Only do this if we're not currently loading AND we've given enough time for the fetch
+  if (!userLoading && !currentUser && hasToken()) {
+    // Don't immediately clear the token on page refresh
+    // Let the useCurrentUser hook handle token validation
+    console.warn("Token present but user data unavailable after loading complete");
     return <Navigate to="/sign-in" state={{ from: location }} replace />;
   }
 
