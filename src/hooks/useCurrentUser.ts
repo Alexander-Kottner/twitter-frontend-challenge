@@ -22,6 +22,10 @@ export const useCurrentUser = () => {
         })
         .catch((error) => {
           console.error("Failed to fetch current user:", error);
+          // If the token is invalid (401, 403), clear it
+          if (error?.response?.status === 401 || error?.response?.status === 403) {
+            localStorage.removeItem("token");
+          }
         })
         .finally(() => {
           dispatch(setUserLoading(false));

@@ -10,13 +10,16 @@ import ProfilePage from "../../pages/profile/ProfilePage";
 import TweetPage from "../../pages/create-tweet-page/TweetPage";
 import CommentPage from "../../pages/create-comment-page/CommentPage";
 import PostPage from "../../pages/post-page/PostPage";
+import ProtectedRoute from "./ProtectedRoute";
 
 const WithNav = () => {
   return (
-    <StyledSideBarPageWrapper>
-      <NavBar />
-      <Outlet />
-    </StyledSideBarPageWrapper>
+    <ProtectedRoute>
+      <StyledSideBarPageWrapper>
+        <NavBar />
+        <Outlet />
+      </StyledSideBarPageWrapper>
+    </ProtectedRoute>
   );
 };
 
