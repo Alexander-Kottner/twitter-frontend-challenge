@@ -1,17 +1,20 @@
 import React, { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useGetRecommendations } from "../../hooks/useGetRecommendations";
 import {
   StyledContainer,
   StyledScrollableContainer,
 } from "../../components/common/Container";
 import FollowUserBox from "../../components/follow-user/FollowUserBox";
 import { StyledH5 } from "../../components/common/text";
+import { useGetRecommendedUsers } from "../../hooks/useUsers";
+import type { User } from "../../service";
 
 const RecommendationPage = () => {
   const [page, setPage] = useState(0);
-  const { users, loading } = useGetRecommendations({ page });
   const { t } = useTranslation();
+
+  // Use React Query hook for recommendations
+  const { data: users = [], isLoading: loading } = useGetRecommendedUsers(10, page);
 
   const observer = useRef<IntersectionObserver | null>(null);
   const lastRecommendation = useCallback(
@@ -36,13 +39,13 @@ const RecommendationPage = () => {
         <StyledH5>{t("header.connect")}</StyledH5>
       </StyledContainer>
       <StyledScrollableContainer padding={"8px"} gap={"16px"}>
-        {users.map((user, index) => {
+        {users.map((user: User, index: number) => {
           if (users.length === index + 1) {
             return (
               <StyledContainer ref={lastRecommendation} key={"last-div"}>
                 <FollowUserBox
                   key={"recommendation-" + user.id}
-                  name={user.name}
+                  name={user.name || "Unknown User"}
                   username={user.username}
                   profilePicture={user.profilePicture}
                   id={user.id}
@@ -53,7 +56,7 @@ const RecommendationPage = () => {
             return (
               <FollowUserBox
                 key={"recommendation-" + user.id}
-                name={user.name}
+                name={user.name || "Unknown User"}
                 username={user.username}
                 profilePicture={user.profilePicture}
                 id={user.id}

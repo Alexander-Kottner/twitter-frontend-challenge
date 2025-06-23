@@ -1,10 +1,19 @@
-import React from "react";
+import React, { useState } from "react";
 import Feed from "./Feed";
-import { useGetFeed } from "../../hooks/useGetFeed";
+import { useGetPosts, useGetFollowingPosts } from "../../hooks/usePosts";
 
-const ContentFeed = () => {
-  const { posts, loading } = useGetFeed();
+interface ContentFeedProps {
+  activeTab?: 'all' | 'following';
+}
 
-  return <Feed posts={posts} loading={loading} />;
+const ContentFeed = ({ activeTab = 'all' }: ContentFeedProps) => {
+  const { data: allPosts, isLoading: allPostsLoading } = useGetPosts();
+  const { data: followingPosts, isLoading: followingPostsLoading } = useGetFollowingPosts();
+
+  const posts = activeTab === 'following' ? followingPosts : allPosts;
+  const loading = activeTab === 'following' ? followingPostsLoading : allPostsLoading;
+
+  return <Feed posts={posts || []} loading={loading} />;
 };
+
 export default ContentFeed;

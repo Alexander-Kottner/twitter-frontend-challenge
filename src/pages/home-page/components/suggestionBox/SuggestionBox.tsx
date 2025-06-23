@@ -1,49 +1,42 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import FollowUserBox from "../../../../components/follow-user/FollowUserBox";
-import { useHttpRequestService } from "../../../../service/HttpRequestService";
 import { useTranslation } from "react-i18next";
-import { User } from "../../../../service";
 import { StyledSuggestionBoxContainer } from "./SuggestionBoxContainer";
+import { useGetRecommendedUsers } from "../../../../hooks/useUsers";
+import type { User } from "../../../../service";
 
 const SuggestionBox = () => {
-  const [users, setUsers] = useState<User[]>([]);
-  const httpService = useHttpRequestService();
   const { t } = useTranslation();
+  const { data: users = [], isLoading } = useGetRecommendedUsers(6, 0);
 
-  useEffect(() => {
-    try {
-      httpService.getRecommendedUsers(6, 0).then((res) => {
-        setUsers(res);
-      });
-    } catch (e) {
-      console.log(e);
-    }
-  }, []);
+  if (isLoading) {
+    return (
+      <StyledSuggestionBoxContainer>
+        <h6>{t("suggestion.who-to-follow")}</h6>
+        <p>Loading suggestions...</p>
+      </StyledSuggestionBoxContainer>
+    );
+  }
 
   return (
     <StyledSuggestionBoxContainer>
       <h6>{t("suggestion.who-to-follow")}</h6>
       {users.length > 0 ? (
         users
-          .filter((value, index, array) => {
+          .filter((value: User, index: number, array: User[]) => {
             return array.indexOf(value) === index;
           })
-          .slice(0, 5)
-          .map((user) => (
+          .map((user: User) => (
             <FollowUserBox
               key={user.id}
-              id={user.id}
-              name={user.name}
+              name={user.name!}
               username={user.username}
-              profilePicture={user.profilePicture}
-              followed={user.isFollowed}
+              profilePicture={user.profilePicture!}
+              id={user.id}
             />
           ))
       ) : (
-        <p>{t("suggestion.no-recommendations")}</p>
-      )}
-      {users.length > 5 && (
-        <a href="/recommendations">{t("suggestion.show-more")}</a>
+        <p>No suggestions available</p>
       )}
     </StyledSuggestionBoxContainer>
   );

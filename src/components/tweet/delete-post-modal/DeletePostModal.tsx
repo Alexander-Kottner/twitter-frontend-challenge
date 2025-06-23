@@ -2,13 +2,10 @@ import React, { useState } from "react";
 import { DeleteIcon } from "../../icon/Icon";
 import Modal from "../../modal/Modal";
 import Button from "../../button/Button";
-import { updateFeed } from "../../../redux/user";
-import { useHttpRequestService } from "../../../service/HttpRequestService";
 import { useTranslation } from "react-i18next";
 import { ButtonType } from "../../button/StyledButton";
-import { useAppDispatch, useAppSelector } from "../../../redux/hooks";
-import { Post } from "../../../service";
 import { StyledDeletePostModalContainer } from "./DeletePostModalContainer";
+import { useDeletePost } from "../../../hooks/usePosts";
 
 interface DeletePostModalProps {
   show: boolean;
@@ -22,16 +19,12 @@ export const DeletePostModal = ({
   onClose,
 }: DeletePostModalProps) => {
   const [showModal, setShowModal] = useState<boolean>(false);
-  const feed = useAppSelector((state) => state.user.feed);
-  const dispatch = useAppDispatch();
-  const service = useHttpRequestService();
   const { t } = useTranslation();
+  const deletePostMutation = useDeletePost();
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     try {
-      service.deletePost(id).then((res) => console.log(res));
-      const newFeed = feed.filter((post: Post) => post.id !== id);
-      dispatch(updateFeed(newFeed));
+      await deletePostMutation.mutateAsync(id);
       handleClose();
     } catch (error) {
       console.log(error);
@@ -62,6 +55,7 @@ export const DeletePostModal = ({
                 buttonType={ButtonType.DELETE}
                 size={"MEDIUM"}
                 onClick={handleDelete}
+                disabled={deletePostMutation.isPending}
               />
             }
           />

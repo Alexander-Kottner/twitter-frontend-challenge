@@ -4,7 +4,11 @@ import logo from "../../../../assets/logo.png";
 import {StyledHeaderContainer} from "./HeaderContainer";
 import ProfileLogoutPrompt from "../../../../components/profile-logout/ProfileLogoutPrompt";
 
-const Header = () => {
+interface HeaderProps {
+  onTabChange?: (tab: 'all' | 'following') => void;
+}
+
+const Header = ({ onTabChange }: HeaderProps) => {
 
   return (
       <>
@@ -13,7 +17,7 @@ const Header = () => {
           <div className="title-container">
             <img src={logo} className="logo" alt="Logo"/>
           </div>
-          <TabBar/>
+          <TabBar onTabChange={onTabChange}/>
         </StyledHeaderContainer>
       </>
   );

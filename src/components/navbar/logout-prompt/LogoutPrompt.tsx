@@ -9,8 +9,8 @@ import {ButtonType} from "../../button/StyledButton";
 import {StyledPromptContainer} from "./PromptContainer";
 import {StyledContainer} from "../../common/Container";
 import {StyledP} from "../../common/text";
-import {useHttpRequestService} from "../../../service/HttpRequestService";
-import {User} from "../../../service";
+import {useGetCurrentUser} from "../../../hooks/useUsers";
+import {performLogout} from "../../../service/HttpRequestService";
 
 interface LogoutPromptProps {
   show: boolean;
@@ -21,17 +21,8 @@ const LogoutPrompt = ({ show }: LogoutPromptProps) => {
   const [showModal, setShowModal] = useState<boolean>(false);
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
-  const service = useHttpRequestService()
-  const [user, setUser] = useState<User>()
+  const { data: user } = useGetCurrentUser();
 
-
-  useEffect(() => {
-    handleGetUser().then(r => setUser(r))
-  }, []);
-
-  const handleGetUser = async () => {
-    return await service.me()
-  }
 
   const handleClick = () => {
     setShowModal(true);
@@ -47,7 +38,7 @@ const LogoutPrompt = ({ show }: LogoutPromptProps) => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    performLogout();
     navigate("/sign-in");
   };
 

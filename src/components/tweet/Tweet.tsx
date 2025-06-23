@@ -1,10 +1,9 @@
-import React, {useEffect, useState} from "react";
+import React, {useState} from "react";
 import {StyledTweetContainer} from "./TweetContainer";
 import AuthorData from "./user-post-data/AuthorData";
 import type {Post, PostImage} from "../../service";
 import {StyledReactionsContainer} from "./ReactionsContainer";
 import Reaction from "./reaction/Reaction";
-import {useHttpRequestService} from "../../service/HttpRequestService";
 import {IconType} from "../icon/Icon";
 import {StyledContainer} from "../common/Container";
 import ThreeDots from "../common/ThreeDots";
@@ -13,74 +12,48 @@ import ImageContainer from "./tweet-image/ImageContainer";
 import CommentModal from "../comment/comment-modal/CommentModal";
 import {useNavigate} from "react-router-dom";
 import {useCurrentUser} from "../../hooks/useCurrentUser";
+import { useGetPostImages, useCreateReaction, useDeleteReaction } from "../../hooks/usePosts";
 
 interface TweetProps {
   post: Post;
 }
 
 const Tweet = ({post}: TweetProps) => {
-  const [actualPost, setActualPost] = useState<Post>(post);
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
   const [showCommentModal, setShowCommentModal] = useState<boolean>(false);
-  const [postImages, setPostImages] = useState<string[]>([]);
-  const [imagesLoading, setImagesLoading] = useState<boolean>(false);
-  const service = useHttpRequestService();
+  
   const navigate = useNavigate();
   const { currentUser } = useCurrentUser();
-
-  useEffect(() => {
-    // Reset images first when post changes
-    setPostImages([]);
-    setImagesLoading(false);
-    
-    // Fetch post images if the post has images
-    if (post.images && post.images.length > 0) {
-      fetchPostImages();
-    }
-  }, [post.id]);
-
-  const fetchPostImages = async () => {
-    try {
-      setImagesLoading(true);
-      const images: PostImage[] = await service.getPostImages(post.id);
-      // Sort images by index and extract URLs
-      const sortedImageUrls = images
-        .sort((a, b) => a.index - b.index)
-        .map(img => img.url);
-      setPostImages(sortedImageUrls);
-    } catch (error) {
-      console.error("Error fetching post images:", error);
-      // Fallback to post.images if available
-      setPostImages(post.images || []);
-    } finally {
-      setImagesLoading(false);
-    }
-  };
-
-  const getCountByType = (type: string): number => {
-    return actualPost?.reactions?.filter((r) => r.type === type).length ?? 0;
-  };
+  
+  // Use React Query for post images
+  const { data: postImages, isLoading: imagesLoading } = useGetPostImages(post.id);
+  const createReactionMutation = useCreateReaction();
+  const deleteReactionMutation = useDeleteReaction();
 
   const handleReaction = async (type: string) => {
-    const reacted = actualPost.reactions?.find(
-        (r) => r.type === type && r.userId === currentUser?.id
-    );
-    if (reacted) {
-      await service.deleteReaction(reacted.id);
-    } else {
-      await service.createReaction(actualPost.id, type);
+    try {
+      if (type === "LIKE") {
+        if (post.hasLiked) {
+          await deleteReactionMutation.mutateAsync({ postId: post.id, reactionType: type });
+        } else {
+          await createReactionMutation.mutateAsync({ postId: post.id, reaction: type });
+        }
+      } else if (type === "RETWEET") {
+        if (post.hasRetweeted) {
+          await deleteReactionMutation.mutateAsync({ postId: post.id, reactionType: type });
+        } else {
+          await createReactionMutation.mutateAsync({ postId: post.id, reaction: type });
+        }
+      }
+    } catch (error) {
+      console.error('Error handling reaction:', error);
     }
-    const newPost = await service.getPostById(post.id);
-    setActualPost(newPost);
   };
 
-  const hasReactedByType = (type: string): boolean => {
-    return (
-      actualPost?.reactions?.some(
-        (r) => r.type === type && r.userId === currentUser?.id
-      ) ?? false
-    );
-  };
+  // Sort images by index and extract URLs with proper typing
+  const sortedImageUrls = postImages
+    ?.sort((a: PostImage, b: PostImage) => a.index - b.index)
+    .map((img: PostImage) => img.url) || [];
 
   return (
       <StyledTweetContainer>
@@ -118,11 +91,12 @@ const Tweet = ({post}: TweetProps) => {
         <StyledContainer onClick={() => navigate(`/post/${post.id}`)}>
           <p>{post.content}</p>
         </StyledContainer>
-        {/* Use fetched S3 images or show loading state */}
-        {(postImages.length > 0 || (post.images && post.images.length > 0)) && (
+        
+        {/* Use React Query fetched images or fallback to post.images */}
+        {(sortedImageUrls.length > 0 || (post.images && post.images.length > 0)) && (
             <StyledContainer padding={"0 0 0 10%"}>
               {!imagesLoading ? (
-                <ImageContainer images={postImages.length > 0 ? postImages : post.images || []}/>
+                <ImageContainer images={sortedImageUrls.length > 0 ? sortedImageUrls : post.images || []}/>
               ) : (
                 <StyledContainer padding={"16px"} alignItems={"center"}>
                   <p>Loading images...</p>
@@ -130,10 +104,11 @@ const Tweet = ({post}: TweetProps) => {
               )}
             </StyledContainer>
         )}
+        
         <StyledReactionsContainer>
           <Reaction
               img={IconType.CHAT}
-              count={actualPost?.comments?.length}
+              count={post.qtyComments || 0}
               reactionFunction={() =>
                   window.innerWidth > 600
                       ? setShowCommentModal(true)
@@ -144,17 +119,17 @@ const Tweet = ({post}: TweetProps) => {
           />
           <Reaction
               img={IconType.RETWEET}
-              count={getCountByType("RETWEET")}
+              count={post.qtyRetweets || 0}
               reactionFunction={() => handleReaction("RETWEET")}
               increment={1}
-              reacted={hasReactedByType("RETWEET")}
+              reacted={post.hasRetweeted || false}
           />
           <Reaction
               img={IconType.LIKE}
-              count={getCountByType("LIKE")}
+              count={post.qtyLikes || 0}
               reactionFunction={() => handleReaction("LIKE")}
               increment={1}
-              reacted={hasReactedByType("LIKE")}
+              reacted={post.hasLiked || false}
           />
         </StyledReactionsContainer>
         <CommentModal

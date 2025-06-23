@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { StyledContentContainer } from "./StyledContentContainer";
 import Header from "../header/Header";
 import TweetBox from "../../../../components/tweet-box/TweetBox";
@@ -7,9 +7,15 @@ import ContentFeed from "../../../../components/feed/ContentFeed";
 import { StyledContainer } from "../../../../components/common/Container";
 
 const ContentContainer = () => {
+  const [activeTab, setActiveTab] = useState<'all' | 'following'>('all');
+
+  const handleTabChange = (tab: 'all' | 'following') => {
+    setActiveTab(tab);
+  };
+
   return (
     <StyledContentContainer>
-      <Header />
+      <Header onTabChange={handleTabChange} />
       <StyledFeedContainer>
         <StyledContainer
           width={"100%"}
@@ -19,7 +25,7 @@ const ContentContainer = () => {
           <TweetBox />
         </StyledContainer>
         <StyledContainer minHeight={"66vh"} width={"100%"}>
-          <ContentFeed />
+          <ContentFeed activeTab={activeTab} />
         </StyledContainer>
       </StyledFeedContainer>
     </StyledContentContainer>

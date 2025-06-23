@@ -25,8 +25,15 @@ export interface Post {
   createdAt: Date;
   authorId: string;
   author: Author;
-  reactions: Reaction[];
-  comments: Post[];
+  // Legacy fields (keeping for backward compatibility)
+  reactions?: Reaction[];
+  comments?: Post[];
+  // New fields from backend API
+  qtyLikes: number;
+  qtyRetweets: number;
+  qtyComments: number;
+  hasLiked: boolean;
+  hasRetweeted: boolean;
 }
 
 export interface Reaction {

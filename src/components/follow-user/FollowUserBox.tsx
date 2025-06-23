@@ -1,16 +1,16 @@
-import React, {useEffect, useState} from "react";
+import React, {useState} from "react";
 import Button from "../button/Button";
-import {useHttpRequestService} from "../../service/HttpRequestService";
 import UserDataBox from "../user-data-box/UserDataBox";
 import {useTranslation} from "react-i18next";
 import {ButtonType} from "../button/StyledButton";
 import "./FollowUserBox.css";
-import {Author, User} from "../../service";
+import {useFollowUser, useUnfollowUser, useGetCurrentUser} from "../../hooks/useUsers";
+import type { Author } from "../../service";
 
 interface FollowUserBoxProps {
   profilePicture?: string;
-  name?: string;
-  username?: string;
+  name: string;
+  username: string;
   id: string;
   followed?: boolean;
 }
@@ -23,45 +23,47 @@ const FollowUserBox = ({
                          followed
                        }: FollowUserBoxProps) => {
   const {t} = useTranslation();
-  const service = useHttpRequestService()
-  const [user, setUser] = useState<User>()
+  const {data: currentUser} = useGetCurrentUser();
 
+  // Determine if user is already being followed
+  const initialFollowState = followed || currentUser?.following?.some((f: Author) => f.id === id) || false;
+  const [isFollowing, setIsFollowing] = useState(initialFollowState);
 
-  useEffect(() => {
-    handleGetUser().then(r => {
-      setUser(r)
-      setIsFollowing((followed || r?.following?.some((f: Author) => f.id === id)) ?? false)
-    })
-  }, []);
+  const followUserMutation = useFollowUser();
+  const unfollowUserMutation = useUnfollowUser();
 
-  const handleGetUser = async () => {
-    return await service.me()
-  }
-
-  const [isFollowing, setIsFollowing] = useState(followed);
-
-  const handleFollow = async () => {
-    if (isFollowing) {
-      await service.unfollowUser(id);
-    } else {
-      await service.followUser(id);
+  const handleClick = async () => {
+    try {
+      if (isFollowing) {
+        await unfollowUserMutation.mutateAsync(id);
+        setIsFollowing(false);
+      } else {
+        await followUserMutation.mutateAsync(id);
+        setIsFollowing(true);
+      }
+    } catch (error) {
+      console.error("Error with follow/unfollow:", error);
     }
-    setIsFollowing(!isFollowing);
   };
+
+  const isPending = followUserMutation.isPending || unfollowUserMutation.isPending;
 
   return (
       <div className="box-container">
         <UserDataBox
+            name={name}
+            username={username}
+            profilePicture={profilePicture}
             id={id}
-            name={name!}
-            profilePicture={profilePicture!}
-            username={username!}
         />
         <Button
             text={isFollowing ? t("buttons.unfollow") : t("buttons.follow")}
-            buttonType={isFollowing ? ButtonType.DELETE : ButtonType.FOLLOW}
+            buttonType={
+              isFollowing ? ButtonType.OUTLINED : ButtonType.DEFAULT
+            }
             size={"SMALL"}
-            onClick={handleFollow}
+            onClick={handleClick}
+            disabled={isPending}
         />
       </div>
   );

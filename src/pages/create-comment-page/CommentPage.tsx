@@ -1,86 +1,71 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { BackArrowIcon } from "../../components/icon/Icon";
 import Button from "../../components/button/Button";
-import {Post, User} from "../../service";
+import { Post } from "../../service";
 import AuthorData from "../../components/tweet/user-post-data/AuthorData";
 import ImageContainer from "../../components/tweet/tweet-image/ImageContainer";
 import { useLocation } from "react-router-dom";
-import { useHttpRequestService } from "../../service/HttpRequestService";
 import TweetInput from "../../components/tweet-input/TweetInput";
 import ImageInput from "../../components/common/ImageInput";
-import { setLength, updateFeed } from "../../redux/user";
 import { useTranslation } from "react-i18next";
 import { ButtonType } from "../../components/button/StyledButton";
-import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { StyledContainer } from "../../components/common/Container";
 import { StyledLine } from "../../components/common/Line";
 import { StyledP } from "../../components/common/text";
+import { useGetPostById, useCreatePost } from "../../hooks/usePosts";
+import { useGetCurrentUser } from "../../hooks/useUsers";
 
 const CommentPage = () => {
   const [content, setContent] = useState("");
-  const [post, setPost] = useState<Post | undefined>(undefined);
   const [images, setImages] = useState<File[]>([]);
-  const [user, setUser] = useState<User>()
+
   const postId = useLocation().pathname.split("/")[3];
-  const service = useHttpRequestService();
-  const { length, query } = useAppSelector((state) => state.user);
-  const dispatch = useAppDispatch();
   const { t } = useTranslation();
 
-  useEffect(() => {
-    handleGetUser().then(r => setUser(r))
-  }, []);
-
-  const handleGetUser = async () => {
-    return await service.me()
-  }
-
-  useEffect(() => {
-    window.innerWidth > 600 && exit();
-  }, []);
-
-  useEffect(() => {
-    service
-      .getPostById(postId)
-      .then((res) => {
-        setPost(res);
-      })
-      .catch((e) => {
-        console.log(e);
-      });
-  }, [postId]);
+  const { data: post } = useGetPostById(postId);
+  const { data: user } = useGetCurrentUser();
+  const createPostMutation = useCreatePost();
 
   const exit = () => {
     window.history.back();
   };
 
   const handleSubmit = async () => {
-    setContent("");
-    setImages([]);
-    dispatch(setLength(length + 1));
-    const posts = await service.getPosts();
-    dispatch(updateFeed(posts));
-    exit();
+    try {
+      await createPostMutation.mutateAsync({
+        content,
+        parentId: postId,
+        images,
+      });
+
+      setContent("");
+      setImages([]);
+      exit();
+    } catch (e) {
+      console.log(e);
+    }
   };
-  const handleRemoveImage = (index: number) => {
+
+  const handleRemoveImage = (index: number): void => {
     const newImages = images.filter((i, idx) => idx !== index);
     setImages(newImages);
   };
 
   return (
-    <StyledContainer padding={"16px"}>
+    <StyledContainer padding={"16px"} borderBottom={"1px solid #ebeef0"}>
       <StyledContainer
         flexDirection={"row"}
-        alignItems={"center"}
         justifyContent={"space-between"}
+        alignItems={"center"}
+        padding={"0 0 16px 0"}
       >
         <BackArrowIcon onClick={exit} />
         <Button
-          text={"Tweet"}
+          text={t("buttons.reply")}
           buttonType={ButtonType.DEFAULT}
           size={"SMALL"}
           onClick={handleSubmit}
-          disabled={content.length === 0}
+          disabled={content.length === 0 || createPostMutation.isPending}
         />
       </StyledContainer>
       {post && (
@@ -126,4 +111,5 @@ const CommentPage = () => {
     </StyledContainer>
   );
 };
+
 export default CommentPage;

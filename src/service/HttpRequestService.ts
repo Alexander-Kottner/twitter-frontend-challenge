@@ -5,6 +5,23 @@ import { S3Service } from "./S3Service";
 const url =
   process.env.REACT_APP_API_URL || "https://twitter-ieea.onrender.com/api";
 
+// Global query client reference for logout functionality
+let globalQueryClient: any = null;
+
+export const setGlobalQueryClient = (queryClient: any) => {
+  globalQueryClient = queryClient;
+};
+
+export const performLogout = () => {
+  // Clear authentication token
+  localStorage.removeItem("token");
+  
+  // Clear React Query cache if available
+  if (globalQueryClient) {
+    globalQueryClient.clear();
+  }
+};
+
 const apiClient = axios.create({
   baseURL: url,
 })
@@ -23,8 +40,8 @@ apiClient.interceptors.response.use((response) => {
   return response;
 }, (error) => {
   if (error.response && error.response.status === 401) {
-    localStorage.removeItem("token");
-    window.location.href = "/login"; // Redirect to login page
+    performLogout();
+    window.location.href = "/sign-in"; // Redirect to sign-in page
   }
   return Promise.reject(error);
 })
@@ -137,8 +154,17 @@ const httpRequestService = {
       return res.data;
     }
   },
-  deleteReaction: async (reactionId: string) => {
+    deleteReaction: async (reactionId: string) => {
     const res = await apiClient.delete(`/reaction/${reactionId}`);
+    if (res.status === 200) {
+      return res.data;
+    }
+  },
+  deleteReactionByPost: async (postId: string, reactionType: string) => {
+    // This should match your backend endpoint: DELETE /reaction/:post_id with body { type }
+    const res = await apiClient.delete(`/reaction/${postId}`, {
+      data: { type: reactionType }
+    });
     if (res.status === 200) {
       return res.data;
     }
@@ -229,7 +255,7 @@ const httpRequestService = {
     const res = await apiClient.delete("/user/me");
 
     if (res.status === 204) {
-      localStorage.removeItem("token");
+      performLogout();
     }
   },
 
