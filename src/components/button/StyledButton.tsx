@@ -1,88 +1,144 @@
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 import "@fontsource/manrope";
 
 interface ButtonProps {
-  size: string;
-  buttonType: ButtonType;
+    size: ButtonSize;
+    variant: ButtonVariant;
+    disabled?: boolean;
 }
-export enum ButtonType {
-  DEFAULT = "DEFAULT",
-  FOLLOW = "FOLLOW",
-  DELETE = "DELETE",
-  OUTLINED = "OUTLINED",
-  DISABLED = "DISABLED",
+
+export enum ButtonVariant {
+    OUTLINED = "OUTLINED",
+    FILLED = "FILLED",
+    GHOST = "GHOST",
+    WHITE = "WHITE",
 }
+
+export enum ButtonSize {
+    SMALL = "SMALL",
+    MEDIUM = "MEDIUM",
+    LARGE = "LARGE",
+}
+
+const getSizeStyles = (size: ButtonSize) => {
+    switch (size) {
+        case ButtonSize.SMALL:
+            return css`
+                width: 100px;
+                height: 32px;
+                padding: 6px 12px;
+                font-size: 13px;
+            `;
+        case ButtonSize.MEDIUM:
+            return css`
+                width: 150px;
+                height: 40px;
+                padding: 8px 16px;
+                font-size: 15px;
+            `;
+        case ButtonSize.LARGE:
+            return css`
+                width: 200px;
+                height: 48px;
+                padding: 12px 20px;
+                font-size: 16px;
+            `;
+        default:
+            return css`
+                width: 150px;
+                height: 40px;
+                padding: 8px 16px;
+                font-size: 15px;
+            `;
+    }
+};
+
+const getVariantStyles = (variant: ButtonVariant, disabled?: boolean) => {
+    if (disabled) {
+        return css`
+            background: ${(props) => props.theme.colors.light};
+            color: ${(props) => props.theme.colors.white};
+            border: none;
+            cursor: not-allowed;
+            opacity: 0.6;
+        `;
+    }
+
+    switch (variant) {
+        case ButtonVariant.OUTLINED:
+            return css`
+                background: transparent;
+                color: ${(props) => props.theme.colors.main};
+                border: 1px solid ${(props) => props.theme.colors.outline};
+                
+                &:hover {
+                    background: ${(props) => props.theme.hover.outlined};
+                }
+            `;
+        case ButtonVariant.FILLED:
+            return css`
+                background: ${(props) => props.theme.colors.main};
+                color: ${(props) => props.theme.colors.white};
+                border: none;
+                
+                &:hover {
+                    background: ${(props) => props.theme.hover.default};
+                }
+            `;
+        case ButtonVariant.GHOST:
+            return css`
+                background: transparent;
+                color: ${(props) => props.theme.colors.text};
+                border: none;
+                
+                &:hover {
+                    background: ${(props) => props.theme.colors.hover};
+                }
+            `;
+        case ButtonVariant.WHITE:
+            return css`
+                background: ${(props) => props.theme.colors.white};
+                color: ${(props) => props.theme.colors.black};
+                border: 1px solid ${(props) => props.theme.colors.outline};
+                
+                &:hover {
+                    background: ${(props) => props.theme.colors.inactiveBackground};
+                }
+            `;
+        default:
+            return css`
+                background: ${(props) => props.theme.colors.main};
+                color: ${(props) => props.theme.colors.white};
+                border: none;
+            `;
+    }
+};
+
 export const StyledButton = styled.button<ButtonProps>`
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 8px 16px;
     gap: 8px;
-    margin-bottom: 8px;
-    width: ${(props) => props.size};
-    height: 33px;
-    left: 16px;
-    top: 16px;
-
-    background: ${(props) => {
-      switch (props.buttonType) {
-        case "DEFAULT":
-          return props.theme.colors.main;
-        case "FOLLOW":
-          return props.theme.colors.black;
-        case "DELETE":
-          return props.theme.colors.error;
-        case "OUTLINED":
-          return props.theme.colors.white;
-        case "DISABLED":
-          return props.theme.colors.light;
-        default:
-          return props.theme.colors.main;
-      }
-    }};
     border-radius: 40px;
-
-    /* Button */
+    
     font-family: ${(props) => props.theme.font.default};
     font-style: normal;
     font-weight: 800;
-    font-size: 15px;
     line-height: 110%;
-
-    border: ${(props) =>
-      props.buttonType === "OUTLINED"
-        ? `1px solid ${props.theme.colors.outline}`
-        : "none"};
-
-    color: ${(props) =>
-      props.buttonType === "OUTLINED"
-        ? props.theme.colors.black
-        : props.theme.colors.white};
-
     text-align: center;
-
-    cursor: pointer;
-
-    transition: 0.3s;
-
+    
+    cursor: ${(props) => props.disabled ? 'not-allowed' : 'pointer'};
+    transition: all 0.3s ease;
+    
+    ${(props) => getSizeStyles(props.size)}
+    ${(props) => getVariantStyles(props.variant, props.disabled)}
+    
     &:active {
-        transform: scale(0.95);
+        transform: ${(props) => props.disabled ? 'none' : 'scale(0.95)'};
     }
-
-    &:hover {
-        background: ${(props) => {
-          switch (props.buttonType) {
-            case ButtonType.DEFAULT:
-              return props.theme.hover.default;
-            case ButtonType.FOLLOW:
-              return props.theme.hover.follow;
-            case ButtonType.DELETE:
-              return props.theme.hover.error;
-            case ButtonType.OUTLINED:
-              return props.theme.hover.outlined;
-            case ButtonType.DISABLED:
-              return props.theme.hover.disabled;
-          }
-        }}
+    
+    &:focus {
+        outline: 2px solid ${(props) => props.theme.colors.main};
+        outline-offset: 2px;
+    }
 `;
-export default StyledButton;

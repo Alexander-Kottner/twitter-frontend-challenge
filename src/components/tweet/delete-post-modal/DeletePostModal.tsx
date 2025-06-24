@@ -3,7 +3,7 @@ import { DeleteIcon } from "../../icon/Icon";
 import Modal from "../../modal/Modal";
 import Button from "../../button/Button";
 import { useTranslation } from "react-i18next";
-import { ButtonType } from "../../button/StyledButton";
+import { ButtonVariant, ButtonSize } from "../../button/StyledButton";
 import { StyledDeletePostModalContainer } from "./DeletePostModalContainer";
 import { useDeletePost } from "../../../hooks/usePosts";
 
@@ -52,8 +52,8 @@ export const DeletePostModal = ({
             acceptButton={
               <Button
                 text={t("buttons.delete")}
-                buttonType={ButtonType.DELETE}
-                size={"MEDIUM"}
+                buttonVariant={ButtonVariant.FILLED}
+                size={ButtonSize.MEDIUM}
                 onClick={handleDelete}
                 disabled={deletePostMutation.isPending}
               />

@@ -8,7 +8,7 @@ import { useLocation } from "react-router-dom";
 import TweetInput from "../../components/tweet-input/TweetInput";
 import ImageInput from "../../components/common/ImageInput";
 import { useTranslation } from "react-i18next";
-import { ButtonType } from "../../components/button/StyledButton";
+import { ButtonVariant, ButtonSize } from "../../components/button/StyledButton";
 import { StyledContainer } from "../../components/common/Container";
 import { StyledLine } from "../../components/common/Line";
 import { StyledP } from "../../components/common/text";
@@ -62,8 +62,8 @@ const CommentPage = () => {
         <BackArrowIcon onClick={exit} />
         <Button
           text={t("buttons.reply")}
-          buttonType={ButtonType.DEFAULT}
-          size={"SMALL"}
+          buttonVariant={ButtonVariant.FILLED}
+          size={ButtonSize.SMALL}
           onClick={handleSubmit}
           disabled={content.length === 0 || createPostMutation.isPending}
         />

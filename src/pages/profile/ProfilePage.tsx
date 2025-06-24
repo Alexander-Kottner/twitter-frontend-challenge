@@ -1,32 +1,30 @@
 import React, {useState} from "react";
-import ProfileInfo from "./ProfileInfo";
 import {useParams} from "react-router-dom";
-import Modal from "../../components/modal/Modal";
 import {useTranslation} from "react-i18next";
-import {ButtonType} from "../../components/button/StyledButton";
-import Button from "../../components/button/Button";
-import ProfileFeed from "../../components/feed/ProfileFeed";
 import {StyledContainer} from "../../components/common/Container";
 import {StyledH5} from "../../components/common/text";
-import {useGetProfileView, useFollowUser, useUnfollowUser, useDeleteProfile} from "../../hooks/useUsers";
-import {useCurrentUser} from "../../hooks/useCurrentUser";
-import type { Author } from "../../service";
+import {ButtonVariant, ButtonSize} from "../../components/button/StyledButton";
+import Button from "../../components/button/Button";
+import Modal from "../../components/modal/Modal";
+import {useGetProfile, useFollowUser, useUnfollowUser, useGetCurrentUser, useDeleteProfile} from "../../hooks/useUsers";
+import ProfileInfo from "./ProfileInfo";
+import ProfileFeed from "../../components/feed/ProfileFeed";
 
 const ProfilePage = () => {
   const [showModal, setShowModal] = useState<boolean>(false);
   const [modalValues, setModalValues] = useState({
     text: "",
     title: "",
-    type: ButtonType.DEFAULT,
+    type: ButtonVariant.FILLED,
     buttonText: "",
   });
 
   const {t} = useTranslation();
   const {id} = useParams<{ id: string }>();
-  const {currentUser} = useCurrentUser();
+  const {data: currentUser} = useGetCurrentUser();
 
   // Use profileView which calls the existing /api/user/:id endpoint
-  const {data: profileView, error: profileError} = useGetProfileView(id!);
+  const {data: profileView, error: profileError} = useGetProfile(id!);
 
   // Use profileView as the display profile
   const displayProfile = profileView;
@@ -39,17 +37,17 @@ const ProfilePage = () => {
   const handleButtonType = () => {
     if (currentUser?.id === id) {
       return {
-        component: ButtonType.DELETE,
+        component: ButtonVariant.FILLED,
         text: t("buttons.delete"),
       };
     } else if (isFollowing) {
       return {
-        component: ButtonType.OUTLINED,
+        component: ButtonVariant.OUTLINED,
         text: t("buttons.unfollow"),
       };
     } else {
       return {
-        component: ButtonType.DEFAULT,
+        component: ButtonVariant.FILLED,
         text: t("buttons.follow"),
       };
     }
@@ -60,7 +58,7 @@ const ProfilePage = () => {
       setModalValues({
         text: t("modal-content.delete-account"),
         title: t("modal-title.delete-account"),
-        type: ButtonType.DELETE,
+        type: ButtonVariant.FILLED,
         buttonText: t("buttons.delete"),
       });
       setShowModal(true);
@@ -120,8 +118,8 @@ const ProfilePage = () => {
                         profilePicture={displayProfile.profilePicture}
                     />
                     <Button
-                        buttonType={handleButtonType().component}
-                        size={"100px"}
+                        buttonVariant={handleButtonType().component}
+                        size={ButtonSize.MEDIUM}
                         onClick={handleButtonAction}
                         text={handleButtonType().text}
                         disabled={followUserMutation.isPending || unfollowUserMutation.isPending}
@@ -130,7 +128,7 @@ const ProfilePage = () => {
                 </StyledContainer>
                 <StyledContainer width={"100%"}>
                   {profileView ? (
-                      <ProfileFeed/>
+                      <ProfileFeed />
                   ) : (
                       <StyledH5>Private account</StyledH5>
                   )}
@@ -141,9 +139,9 @@ const ProfilePage = () => {
                     title={modalValues.title}
                     acceptButton={
                       <Button
-                          buttonType={modalValues.type}
+                          buttonVariant={modalValues.type}
                           text={modalValues.buttonText}
-                          size={"MEDIUM"}
+                          size={ButtonSize.MEDIUM}
                           onClick={handleSubmit}
                           disabled={deleteProfileMutation.isPending}
                       />

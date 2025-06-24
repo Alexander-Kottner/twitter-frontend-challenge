@@ -3,11 +3,11 @@ import React, { useState } from "react";
 import logo from "../../../assets/logo.png";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import AuthWrapper from "../../../pages/auth/AuthWrapper";
 import { useHttpRequestService } from "../../../service/HttpRequestService";
+import AuthWrapper from "../AuthWrapper";
 import LabeledInput from "../../../components/labeled-input/LabeledInput";
 import Button from "../../../components/button/Button";
-import { ButtonType } from "../../../components/button/StyledButton";
+import { ButtonVariant, ButtonSize } from "../../../components/button/StyledButton";
 import { StyledH3 } from "../../../components/common/text";
 import { useAppDispatch } from "../../../redux/hooks";
 import { setCurrentUser } from "../../../redux/user";
@@ -184,15 +184,15 @@ const SignUpPage = () => {
                 <div style={{ display: "flex", flexDirection: "column", marginTop: "20px" }}>
                   <Button
                     text={loading ? "Creating account..." : t("buttons.register")}
-                    buttonType={ButtonType.FOLLOW}
-                    size={"MEDIUM"}
+                    buttonVariant={ButtonVariant.FILLED}
+                    size={ButtonSize.MEDIUM}
                     onClick={() => {}}
                     disabled={loading}
                   />
                   <Button
                     text={t("buttons.login")}
-                    buttonType={ButtonType.OUTLINED}
-                    size={"MEDIUM"}
+                    buttonVariant={ButtonVariant.OUTLINED}
+                    size={ButtonSize.MEDIUM}
                     onClick={() => navigate("/sign-in")}
                     disabled={loading}
                   />

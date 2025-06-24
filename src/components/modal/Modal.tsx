@@ -1,7 +1,7 @@
 import React, { ReactNode } from "react";
 import { StyledBlurredBackground } from "../common/BlurredBackground";
 import Button from "../button/Button";
-import { ButtonType } from "../button/StyledButton";
+import { ButtonVariant, ButtonSize } from "../button/StyledButton";
 import { StyledModalContainer } from "./ModalContainer";
 import { StyledContainer } from "../common/Container";
 import { StyledH5, StyledP } from "../common/text";
@@ -45,9 +45,9 @@ const Modal = ({
                 <StyledContainer alignItems={"center"}>
                   {acceptButton}
                   <Button
-                    buttonType={ButtonType.OUTLINED}
+                    buttonVariant={ButtonVariant.OUTLINED}
                     text={"Cancel"}
-                    size={"MEDIUM"}
+                    size={ButtonSize.MEDIUM}
                     onClick={onClose}
                   />
                 </StyledContainer>

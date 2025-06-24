@@ -1,24 +1,42 @@
+import { ButtonVariant, ButtonSize, StyledButton } from "./StyledButton";
 import React, { MouseEventHandler } from "react";
-import { ButtonType, StyledButton } from "./StyledButton";
 
 interface ButtonProps {
   text: string;
-  size: string;
-  buttonType: ButtonType;
-  onClick?: MouseEventHandler;
+  size: ButtonSize;
+  buttonVariant: ButtonVariant;
+  onClick?: MouseEventHandler<HTMLButtonElement>;
   disabled?: boolean;
+  type?: "button" | "submit" | "reset";
+  className?: string;
+  children?: React.ReactNode;
 }
-const Button = ({ text, size, buttonType, onClick, disabled }: ButtonProps) => {
+
+const Button = ({ 
+  text, 
+  size, 
+  buttonVariant, 
+  onClick, 
+  disabled = false, 
+  type = "button",
+  className,
+  children 
+}: ButtonProps) => {
   return (
     <StyledButton
       size={size}
-      buttonType={disabled ? ButtonType.DISABLED : buttonType}
-      disabled={buttonType === "DISABLED" || (disabled ? disabled : false)}
+      variant={buttonVariant}
       onClick={onClick}
+      disabled={disabled}
+      type={type}
+      className={className}
     >
-      {text}
+      {children ? children : text}
     </StyledButton>
   );
 };
 
 export default Button;
+
+
+

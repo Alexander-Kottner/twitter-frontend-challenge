@@ -1,13 +1,12 @@
 import React, {useEffect, useState} from "react";
 import Modal from "../../modal/Modal";
-import logo from "../../../assets/logo.png";
 import Button from "../../button/Button";
+import { StyledContainer } from "../../common/Container";
+import { useTranslation } from "react-i18next";
+import {ButtonVariant, ButtonSize} from "../../button/StyledButton";
+import logo from "../../../assets/logo.png";
 import {useNavigate} from "react-router-dom";
-import {useTranslation} from "react-i18next";
 import SwitchButton from "../../switch/SwitchButton";
-import {ButtonType} from "../../button/StyledButton";
-import {StyledPromptContainer} from "./PromptContainer";
-import {StyledContainer} from "../../common/Container";
 import {StyledP} from "../../common/text";
 import {useGetCurrentUser} from "../../../hooks/useUsers";
 import {performLogout} from "../../../service/HttpRequestService";
@@ -49,7 +48,7 @@ const LogoutPrompt = ({ show }: LogoutPromptProps) => {
   return (
     <>
       {showPrompt && (
-        <StyledPromptContainer>
+        <StyledContainer>
           <StyledContainer
             flexDirection={"row"}
             gap={"16px"}
@@ -68,7 +67,7 @@ const LogoutPrompt = ({ show }: LogoutPromptProps) => {
               user?.username
             }`}</StyledP>
           </StyledContainer>
-        </StyledPromptContainer>
+        </StyledContainer>
       )}
       <Modal
         show={showModal}
@@ -76,12 +75,12 @@ const LogoutPrompt = ({ show }: LogoutPromptProps) => {
         img={logo}
         title={t("modal-title.logout")}
         acceptButton={
-          <Button
-            buttonType={ButtonType.FOLLOW}
-            text={t("buttons.logout")}
-            size={"MEDIUM"}
-            onClick={handleLogout}
-          />
+              <Button
+                text={t("buttons.logout")}
+                buttonVariant={ButtonVariant.FILLED}
+                size={ButtonSize.MEDIUM}
+                onClick={handleLogout}
+              />
         }
         onClose={() => setShowModal(false)}
       />

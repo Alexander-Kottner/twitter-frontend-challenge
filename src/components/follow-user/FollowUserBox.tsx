@@ -2,8 +2,8 @@ import React, {useState} from "react";
 import Button from "../button/Button";
 import UserDataBox from "../user-data-box/UserDataBox";
 import {useTranslation} from "react-i18next";
-import {ButtonType} from "../button/StyledButton";
-import "./FollowUserBox.css";
+import {ButtonVariant, ButtonSize} from "../button/StyledButton";
+import {StyledFollowUserBoxContainer} from "./StyledFollowUserBox";
 import {useFollowUser, useUnfollowUser, useGetCurrentUser} from "../../hooks/useUsers";
 import type { Author } from "../../service";
 
@@ -49,7 +49,7 @@ const FollowUserBox = ({
   const isPending = followUserMutation.isPending || unfollowUserMutation.isPending;
 
   return (
-      <div className="box-container">
+      <StyledFollowUserBoxContainer>
         <UserDataBox
             name={name}
             username={username}
@@ -58,14 +58,14 @@ const FollowUserBox = ({
         />
         <Button
             text={isFollowing ? t("buttons.unfollow") : t("buttons.follow")}
-            buttonType={
-              isFollowing ? ButtonType.OUTLINED : ButtonType.DEFAULT
+            buttonVariant={
+              isFollowing ? ButtonVariant.OUTLINED : ButtonVariant.FILLED
             }
-            size={"SMALL"}
+            size={ButtonSize.SMALL}
             onClick={handleClick}
             disabled={isPending}
         />
-      </div>
+      </StyledFollowUserBoxContainer>
   );
 };
 

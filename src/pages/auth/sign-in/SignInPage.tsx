@@ -6,7 +6,7 @@ import { useHttpRequestService } from "../../../service/HttpRequestService";
 import AuthWrapper from "../AuthWrapper";
 import LabeledInput from "../../../components/labeled-input/LabeledInput";
 import Button from "../../../components/button/Button";
-import { ButtonType } from "../../../components/button/StyledButton";
+import { ButtonVariant, ButtonSize } from "../../../components/button/StyledButton";
 import { StyledH3 } from "../../../components/common/text";
 import { useAppDispatch } from "../../../redux/hooks";
 import { setCurrentUser } from "../../../redux/user";
@@ -75,15 +75,15 @@ const SignInPage = () => {
           <div style={{ display: "flex", flexDirection: "column" }}>
             <Button
               text={loading ? "Signing in..." : t("buttons.login")}
-              buttonType={ButtonType.FOLLOW}
-              size={"MEDIUM"}
+              buttonVariant={ButtonVariant.FILLED}
+              size={ButtonSize.MEDIUM}
               onClick={handleSubmit}
               disabled={loading}
             />
             <Button
               text={t("buttons.register")}
-              buttonType={ButtonType.OUTLINED}
-              size={"MEDIUM"}
+              buttonVariant={ButtonVariant.OUTLINED}
+              size={ButtonSize.MEDIUM}
               onClick={() => navigate("/sign-up")}
               disabled={loading}
             />
