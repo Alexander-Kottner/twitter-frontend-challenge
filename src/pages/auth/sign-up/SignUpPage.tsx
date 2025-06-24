@@ -11,6 +11,9 @@ import { ButtonType } from "../../../components/button/StyledButton";
 import { StyledH3 } from "../../../components/common/text";
 import { useAppDispatch } from "../../../redux/hooks";
 import { setCurrentUser } from "../../../redux/user";
+import { Formik, Form } from 'formik';
+import * as Yup from 'yup';
+import { StyledErrorMessage } from "../../../components/common/ValidationStyles";
 
 interface SignUpData {
   name: string;
@@ -20,9 +23,29 @@ interface SignUpData {
   confirmPassword: string;
 }
 
+const SignUpSchema = Yup.object().shape({
+  name: Yup.string()
+    .min(2, 'Name must be at least 2 characters')
+    .max(50, 'Name must be less than 50 characters')
+    .required('Name is required'),
+  username: Yup.string()
+    .min(3, 'Username must be at least 3 characters')
+    .max(20, 'Username must be less than 20 characters')
+    .matches(/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers, and underscores')
+    .required('Username is required'),
+  email: Yup.string()
+    .email('Invalid email format')
+    .required('Email is required'),
+  password: Yup.string()
+    .min(8, 'Password must be at least 8 characters')
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/, 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character')
+    .required('Password is required'),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref('password')], 'Passwords must match')
+    .required('Please confirm your password')
+});
+
 const SignUpPage = () => {
-  const [data, setData] = useState<Partial<SignUpData>>({});
-  const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const httpRequestService = useHttpRequestService();
@@ -30,17 +53,11 @@ const SignUpPage = () => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
-  const handleChange =
-    (prop: string) => (event: ChangeEvent<HTMLInputElement>) => {
-      setData({ ...data, [prop]: event.target.value });
-    };
-
-  const handleSubmit = async () => {
+  const handleSubmit = async (values: SignUpData, { setFieldError }: any) => {
     setLoading(true);
-    setError(false);
 
     try {
-      const { confirmPassword, ...requestData } = data;
+      const { confirmPassword, ...requestData } = values;
 
       // First, sign up and store the token
       await httpRequestService.signUp(requestData);
@@ -51,9 +68,18 @@ const SignUpPage = () => {
 
       // Only navigate after successful authentication and user data fetch
       navigate("/");
-    } catch (err) {
+    } catch (err: any) {
       console.error("Sign up error:", err);
-      setError(true);
+      
+      // Handle specific field errors from backend
+      if (err.response?.data?.message?.includes('username')) {
+        setFieldError('username', 'Username already exists');
+      } else if (err.response?.data?.message?.includes('email')) {
+        setFieldError('email', 'Email already exists');
+      } else {
+        setFieldError('email', 'Registration failed. Please try again.');
+      }
+      
       // Clear any stored token if sign up failed
       localStorage.removeItem("token");
     } finally {
@@ -69,61 +95,111 @@ const SignUpPage = () => {
             <img src={logo} alt="Twitter Logo" />
             <StyledH3>{t("title.register")}</StyledH3>
           </div>
-          <div className={"input-container"}>
-            <LabeledInput
-              required
-              placeholder={"Enter name..."}
-              title={t("input-params.name")}
-              error={error}
-              onChange={handleChange("name")}
-            />
-            <LabeledInput
-              required
-              placeholder={"Enter username..."}
-              title={t("input-params.username")}
-              error={error}
-              onChange={handleChange("username")}
-            />
-            <LabeledInput
-              required
-              placeholder={"Enter email..."}
-              title={t("input-params.email")}
-              error={error}
-              onChange={handleChange("email")}
-            />
-            <LabeledInput
-              type="password"
-              required
-              placeholder={"Enter password..."}
-              title={t("input-params.password")}
-              error={error}
-              onChange={handleChange("password")}
-            />
-            <LabeledInput
-              type="password"
-              required
-              placeholder={"Confirm password..."}
-              title={t("input-params.confirm-password")}
-              error={error}
-              onChange={handleChange("confirmPassword")}
-            />
-          </div>
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <Button
-              text={loading ? "Creating account..." : t("buttons.register")}
-              buttonType={ButtonType.FOLLOW}
-              size={"MEDIUM"}
-              onClick={handleSubmit}
-              disabled={loading}
-            />
-            <Button
-              text={t("buttons.login")}
-              buttonType={ButtonType.OUTLINED}
-              size={"MEDIUM"}
-              onClick={() => navigate("/sign-in")}
-              disabled={loading}
-            />
-          </div>
+          <Formik
+            initialValues={{
+              name: '',
+              username: '',
+              email: '',
+              password: '',
+              confirmPassword: ''
+            }}
+            validationSchema={SignUpSchema}
+            onSubmit={handleSubmit}
+          >
+            {({ errors, touched, values, handleChange, handleBlur }) => (
+              <Form>
+                <div className={"input-container"}>
+                  <LabeledInput
+                    required
+                    placeholder={"Enter name..."}
+                    title={t("input-params.name")}
+                    error={!!(errors.name && touched.name)}
+                    onChange={handleChange}
+                    name="name"
+                    value={values.name}
+                    onBlur={handleBlur}
+                  />
+                  {errors.name && touched.name && (
+                    <StyledErrorMessage>{errors.name}</StyledErrorMessage>
+                  )}
+                  
+                  <LabeledInput
+                    required
+                    placeholder={"Enter username..."}
+                    title={t("input-params.username")}
+                    error={!!(errors.username && touched.username)}
+                    onChange={handleChange}
+                    name="username"
+                    value={values.username}
+                    onBlur={handleBlur}
+                  />
+                  {errors.username && touched.username && (
+                    <StyledErrorMessage>{errors.username}</StyledErrorMessage>
+                  )}
+                  
+                  <LabeledInput
+                    required
+                    placeholder={"Enter email..."}
+                    title={t("input-params.email")}
+                    error={!!(errors.email && touched.email)}
+                    onChange={handleChange}
+                    name="email"
+                    value={values.email}
+                    onBlur={handleBlur}
+                  />
+                  {errors.email && touched.email && (
+                    <StyledErrorMessage>{errors.email}</StyledErrorMessage>
+                  )}
+                  
+                  <LabeledInput
+                    type="password"
+                    required
+                    placeholder={"Enter password..."}
+                    title={t("input-params.password")}
+                    error={!!(errors.password && touched.password)}
+                    onChange={handleChange}
+                    name="password"
+                    value={values.password}
+                    onBlur={handleBlur}
+                  />
+                  {errors.password && touched.password && (
+                    <StyledErrorMessage>{errors.password}</StyledErrorMessage>
+                  )}
+                  
+                  <LabeledInput
+                    type="password"
+                    required
+                    placeholder={"Confirm password..."}
+                    title={t("input-params.confirm-password")}
+                    error={!!(errors.confirmPassword && touched.confirmPassword)}
+                    onChange={handleChange}
+                    name="confirmPassword"
+                    value={values.confirmPassword}
+                    onBlur={handleBlur}
+                  />
+                  {errors.confirmPassword && touched.confirmPassword && (
+                    <StyledErrorMessage>{errors.confirmPassword}</StyledErrorMessage>
+                  )}
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", marginTop: "20px" }}>
+                  <Button
+                    text={loading ? "Creating account..." : t("buttons.register")}
+                    buttonType={ButtonType.FOLLOW}
+                    size={"MEDIUM"}
+                    onClick={() => {}}
+                    disabled={loading}
+                  />
+                  <Button
+                    text={t("buttons.login")}
+                    buttonType={ButtonType.OUTLINED}
+                    size={"MEDIUM"}
+                    onClick={() => navigate("/sign-in")}
+                    disabled={loading}
+                  />
+                </div>
+              </Form>
+            )}
+          </Formik>
         </div>
       </div>
     </AuthWrapper>
