@@ -3,7 +3,7 @@ import {
     StyledLogoutPrompt,
     StyledProfileLogoutPromptContainer
 } from "./StyledProfileLogoutPromptContainer";
-import React, {useState} from "react";
+import React, {useState, useEffect, useRef} from "react";
 import icon from "../../assets/icon.jpg";
 import {StyledP} from "../common/text";
 import {StyledContainer} from "../common/Container";
@@ -18,6 +18,7 @@ interface ProfileLogoutPromptProps {
 const ProfileLogoutPrompt = ({margin, direction}: ProfileLogoutPromptProps) => {
     const [logoutOpen, setLogoutOpen] = useState(false);
     const { data: user } = useGetCurrentUser();
+    const componentRef = useRef<HTMLDivElement>(null);
 
     const handleLogout = () => {
         setLogoutOpen(!logoutOpen);
@@ -27,9 +28,26 @@ const ProfileLogoutPrompt = ({margin, direction}: ProfileLogoutPromptProps) => {
         event.stopPropagation();
     };
 
+    // Close logout prompt when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (componentRef.current && !componentRef.current.contains(event.target as Node)) {
+                setLogoutOpen(false);
+            }
+        };
+
+        if (logoutOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [logoutOpen]);
 
     return (
         <StyledContainer
+            ref={componentRef}
             maxHeight={"48px"}
             flexDirection={"row"}
             className={'profile-info'}

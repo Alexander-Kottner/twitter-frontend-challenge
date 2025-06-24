@@ -26,8 +26,8 @@ const Modal = ({
   return (
     <>
       {show && (
-        <StyledBlurredBackground>
-          <StyledModalContainer>
+        <StyledBlurredBackground onClick={onClose}>
+          <StyledModalContainer onClick={(e) => e.stopPropagation()}>
             <StyledContainer alignItems={"center"} justifyContent={"center"}>
               {img && (
                 <img src={img} alt={"modal"} width={"32px"} height={"26px"} />
