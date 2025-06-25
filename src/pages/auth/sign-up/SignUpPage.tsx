@@ -14,6 +14,7 @@ import { setCurrentUser } from "../../../redux/user";
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { StyledErrorMessage } from "../../../components/common/ValidationStyles";
+import Toast, { ToastType } from "../../../components/toast/Toast";
 
 interface SignUpData {
   name: string;
@@ -47,6 +48,7 @@ const SignUpSchema = Yup.object().shape({
 
 const SignUpPage = () => {
   const [loading, setLoading] = useState(false);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
 
   const httpRequestService = useHttpRequestService();
   const navigate = useNavigate();
@@ -66,8 +68,14 @@ const SignUpPage = () => {
       const userData = await httpRequestService.me();
       dispatch(setCurrentUser(userData));
 
-      // Only navigate after successful authentication and user data fetch
-      navigate("/");
+      // Show success toast
+      setShowSuccessToast(true);
+      setTimeout(() => setShowSuccessToast(false), 3000);
+
+      // Navigate after a brief delay to show the toast
+      setTimeout(() => {
+        navigate("/");
+      }, 1000);
     } catch (err: any) {
       console.error("Sign up error:", err);
       
@@ -89,6 +97,12 @@ const SignUpPage = () => {
 
   return (
     <AuthWrapper>
+      {showSuccessToast && (
+        <Toast 
+          type={ToastType.SUCCESS} 
+          message={"Registro exitoso!"}
+        />
+      )}
       <div className={"border"}>
         <div className={"container"}>
           <div className={"header"}>
@@ -106,7 +120,7 @@ const SignUpPage = () => {
             validationSchema={SignUpSchema}
             onSubmit={handleSubmit}
           >
-            {({ errors, touched, values, handleChange, handleBlur }) => (
+            {({ errors, touched, values, handleChange, handleBlur, submitForm }) => (
               <Form>
                 <div className={"input-container"}>
                   <LabeledInput
@@ -181,12 +195,12 @@ const SignUpPage = () => {
                     <StyledErrorMessage>{errors.confirmPassword}</StyledErrorMessage>
                   )}
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", marginTop: "20px" }}>
+                <div style={{ display: "flex", flexDirection: "column", marginTop: "20px", gap: "8px", alignItems: "center" }}>
                   <Button
                     text={loading ? "Creating account..." : t("buttons.register")}
                     buttonVariant={ButtonVariant.FILLED}
                     size={ButtonSize.MEDIUM}
-                    onClick={() => {}}
+                    onClick={submitForm}
                     disabled={loading}
                   />
                   <Button

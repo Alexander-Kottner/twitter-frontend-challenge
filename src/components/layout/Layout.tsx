@@ -14,6 +14,7 @@ import { LightTheme } from "../../util/LightTheme";
 import { ROUTER } from "./Router";
 import Loader from "../loader/Loader";
 import { setGlobalQueryClient } from "../../service/HttpRequestService";
+import { ToastProvider } from "../../context/ToastContext";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -60,8 +61,10 @@ export const Layout = () => {
         <ThemeWrapper>
           <PersistGate loading={<Loader />} persistor={persistor}>
             <I18nextProvider i18n={i18next}>
-              <RouterProvider router={ROUTER} />
-              <ReactQueryDevtools initialIsOpen={false} />
+              <ToastProvider>
+                <RouterProvider router={ROUTER} />
+                <ReactQueryDevtools initialIsOpen={false} />
+              </ToastProvider>
             </I18nextProvider>
           </PersistGate>
         </ThemeWrapper>

@@ -10,12 +10,14 @@ import { ButtonVariant, ButtonSize } from "../../../components/button/StyledButt
 import { StyledH3 } from "../../../components/common/text";
 import { useAppDispatch } from "../../../redux/hooks";
 import { setCurrentUser } from "../../../redux/user";
+import Toast, { ToastType } from "../../../components/toast/Toast";
 
 const SignInPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
 
   const httpRequestService = useHttpRequestService();
   const navigate = useNavigate();
@@ -34,8 +36,14 @@ const SignInPage = () => {
       const userData = await httpRequestService.me();
       dispatch(setCurrentUser(userData));
 
-      // Only navigate after successful authentication and user data fetch
-      navigate("/");
+      // Show success toast
+      setShowSuccessToast(true);
+      setTimeout(() => setShowSuccessToast(false), 3000);
+
+      // Navigate after a brief delay to show the toast
+      setTimeout(() => {
+        navigate("/");
+      }, 1000);
     } catch (err) {
       console.error("Sign in error:", err);
       setError(true);
@@ -48,6 +56,12 @@ const SignInPage = () => {
 
   return (
     <AuthWrapper>
+      {showSuccessToast && (
+        <Toast 
+          type={ToastType.SUCCESS} 
+          message={"Log in exitoso!"}
+        />
+      )}
       <div className={"border"}>
         <div className={"container"}>
           <div className={"header"}>
@@ -72,7 +86,7 @@ const SignInPage = () => {
             />
             <p className={"error-message"}>{error && t("error.login")}</p>
           </div>
-          <div style={{ display: "flex", flexDirection: "column" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             <Button
               text={loading ? "Signing in..." : t("buttons.login")}
               buttonVariant={ButtonVariant.FILLED}

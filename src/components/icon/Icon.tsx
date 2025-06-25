@@ -18,6 +18,7 @@ export enum IconType {
   SETTINGS = "settings",
   DELETE = "delete",
   ALERT = "alert",
+  CHECK = "check",
 }
 
 interface IconProps {
@@ -48,6 +49,7 @@ export const Icon = (props: IconProps) => {
     [IconType.SETTINGS]: <SettingsIcon {...props} />,
     [IconType.DELETE]: <DeleteIcon {...props} />,
     [IconType.ALERT]: <AlertIcon {...props} />,
+    [IconType.CHECK]: <CheckIcon {...props} />,
   };
 };
 
@@ -549,6 +551,24 @@ export const AlertIcon = (props: IconProps) => {
       <path
         d="M11 15H13V17H11V15ZM11 7H13V13H11V7ZM11.99 2C6.47 2 2 6.48 2 12C2 17.52 6.47 22 11.99 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 11.99 2ZM12 20C7.58 20 4 16.42 4 12C4 7.58 7.58 4 12 4C16.42 4 20 7.58 20 12C20 16.42 16.42 20 12 20Z"
         fill={props.color ?? "#E5397F"}
+      />
+    </svg>
+  );
+};
+
+export const CheckIcon = (props: IconProps) => {
+  return (
+    <svg
+      width={props.width ?? "24"}
+      height={props.height ?? "24"}
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      onClick={props.onClick}
+    >
+      <path
+        d="M9 11.5L11.5 14L22 3.5L20.5 2L11.5 10.5L9 8L2 15L3.5 16.5L9 11.5Z"
+        fill={props.color ?? "#4CAF50"}
       />
     </svg>
   );

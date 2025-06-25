@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useHttpRequestService } from '../service/HttpRequestService';
+import { useToast } from '../context/ToastContext';
 import type { Post, PostData } from '../service';
 
 export const useGetPosts = (limit?: number) => {
@@ -69,6 +70,7 @@ export const useGetPostImages = (postId: string) => {
 export const useCreatePost = () => {
   const queryClient = useQueryClient();
   const service = useHttpRequestService();
+  const { showError } = useToast();
   
   return useMutation({
     mutationFn: async (data: PostData & { images?: File[] }) => {
@@ -119,6 +121,7 @@ export const useCreatePost = () => {
     },
     onError: (error) => {
       console.error('Failed to create post:', error);
+      showError('Hubo un error al crear el tweet. Por favor, inténtalo de nuevo.');
     },
   });
 };
@@ -154,6 +157,7 @@ export const useDeletePost = () => {
 export const useCreateReaction = () => {
   const queryClient = useQueryClient();
   const service = useHttpRequestService();
+  const { showError } = useToast();
   
   return useMutation({
     mutationFn: ({ postId, reaction }: { postId: string; reaction: string }) =>
@@ -167,6 +171,7 @@ export const useCreateReaction = () => {
     },
     onError: (error) => {
       console.error('Failed to create reaction:', error);
+      showError('Sucedió un error al agregar la reacción. Por favor, inténtalo de nuevo.');
     },
   });
 };
@@ -174,6 +179,7 @@ export const useCreateReaction = () => {
 export const useDeleteReaction = () => {
   const queryClient = useQueryClient();
   const service = useHttpRequestService();
+  const { showError } = useToast();
   
   return useMutation({
     mutationFn: ({ postId, reactionType }: { postId: string; reactionType: string }) => 
@@ -187,6 +193,7 @@ export const useDeleteReaction = () => {
     },
     onError: (error) => {
       console.error('Failed to delete reaction:', error);
+      showError('Sucedió un error al eliminar la reacción. Por favor, inténtalo de nuevo.');
     },
   });
 };

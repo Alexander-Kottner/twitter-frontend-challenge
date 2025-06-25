@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useHttpRequestService } from '../service/HttpRequestService';
+import { useToast } from '../context/ToastContext';
 import type { User, Author } from '../service';
 
 export const useGetCurrentUser = () => {
@@ -59,6 +60,7 @@ export const useSearchUsers = (username: string, limit: number, skip: number) =>
 export const useFollowUser = () => {
   const queryClient = useQueryClient();
   const service = useHttpRequestService();
+  const { showError } = useToast();
   
   return useMutation({
     mutationFn: (userId: string) => service.followUser(userId),
@@ -72,6 +74,7 @@ export const useFollowUser = () => {
     },
     onError: (error) => {
       console.error('Failed to follow user:', error);
+      showError('Sucedió un error al seguir al usuario. Por favor, inténtalo de nuevo.');
     },
   });
 };
@@ -79,6 +82,7 @@ export const useFollowUser = () => {
 export const useUnfollowUser = () => {
   const queryClient = useQueryClient();
   const service = useHttpRequestService();
+  const { showError } = useToast();
   
   return useMutation({
     mutationFn: (userId: string) => service.unfollowUser(userId),
@@ -92,6 +96,7 @@ export const useUnfollowUser = () => {
     },
     onError: (error) => {
       console.error('Failed to unfollow user:', error);
+      showError('Sucedio un error al dejar de seguir al usuario. Por favor, inténtalo de nuevo.');
     },
   });
 };

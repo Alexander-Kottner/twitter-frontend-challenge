@@ -13,6 +13,8 @@ export const LightTheme: Theme = {
     text: "#566370",
     black: "#000000",
     errorContainer: "#E5397F",
+    success: "#4CAF50",
+    successContainer: "#4CAF50",
   },
   hover: {
     default: "#428AD2",
@@ -25,6 +27,7 @@ export const LightTheme: Theme = {
     default: "#566370",
     title: "#000000",
     error: "#E03C39",
+    success: "#4CAF50",
   },
   font: {
     default: "Manrope",
@@ -47,6 +50,8 @@ export type Theme = {
     text: string;
     black: string;
     errorContainer: string;
+    success: string;
+    successContainer: string;
   };
   hover: {
     default: string;
@@ -59,6 +64,7 @@ export type Theme = {
     default: string;
     title: string;
     error: string;
+    success: string;
   };
   font: {
     default: string;

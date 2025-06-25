@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { StyledToastContainer } from "./ToastContainer";
-import { AlertIcon } from "../icon/Icon";
+import { AlertIcon, CheckIcon } from "../icon/Icon";
 
 export enum ToastType {
   ALERT = "ALERT",
+  SUCCESS = "SUCCESS",
 }
 
 interface ToastProps {
@@ -17,6 +18,7 @@ const Toast = ({ message, type, show }: ToastProps) => {
 
   const iconMap = {
     [ToastType.ALERT]: <AlertIcon />,
+    [ToastType.SUCCESS]: <CheckIcon />,
   };
 
   const toastIcon = iconMap[type] || null;
