@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { useHttpRequestService } from '../service/HttpRequestService';
 import { useToast } from '../context/ToastContext';
 import type { Post, PostData } from '../service';
@@ -102,22 +102,17 @@ export const useCreatePost = () => {
       return createdPost;
     },
     onSuccess: (newPost, variables) => {
-      // Invalidate and refetch posts
-      queryClient.invalidateQueries({ queryKey: ['posts'] });
-      
-      // If it's a comment, also invalidate comments
+      // If it's a comment, invalidate related queries
       if (variables.parentId) {
         queryClient.invalidateQueries({ queryKey: ['comments', variables.parentId] });
         queryClient.invalidateQueries({ queryKey: ['post', variables.parentId] });
       }
       
-      // Optimistically update the cache
-      if (!variables.parentId) {
-        queryClient.setQueryData(['posts'], (oldData: Post[] | undefined) => {
-          if (!oldData) return [newPost];
-          return [newPost, ...oldData];
-        });
-      }
+      // For all posts, invalidate the infinite queries to trigger a fresh fetch
+      // This is safer than optimistic updates and prevents undefined post issues
+      queryClient.invalidateQueries({ queryKey: ['posts', 'infinite'] });
+      queryClient.invalidateQueries({ queryKey: ['posts', 'following', 'infinite'] });
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
     },
     onError: (error) => {
       console.error('Failed to create post:', error);
@@ -133,7 +128,7 @@ export const useDeletePost = () => {
   return useMutation({
     mutationFn: (postId: string) => service.deletePost(postId),
     onSuccess: (_, deletedPostId) => {
-      // Remove from all post caches
+      // Remove from regular post caches
       queryClient.setQueryData(['posts'], (oldData: Post[] | undefined) => {
         if (!oldData) return [];
         return oldData.filter(post => post.id !== deletedPostId);
@@ -142,6 +137,33 @@ export const useDeletePost = () => {
       queryClient.setQueryData(['posts', 'following'], (oldData: Post[] | undefined) => {
         if (!oldData) return [];
         return oldData.filter(post => post.id !== deletedPostId);
+      });
+      
+      // Remove from infinite query caches
+      queryClient.setQueryData(['posts', 'infinite'], (oldData: any) => {
+        if (!oldData) return oldData;
+        
+        const newPages = oldData.pages.map((page: Post[]) => 
+          page.filter(post => post.id !== deletedPostId)
+        );
+        
+        return {
+          ...oldData,
+          pages: newPages,
+        };
+      });
+      
+      queryClient.setQueryData(['posts', 'following', 'infinite'], (oldData: any) => {
+        if (!oldData) return oldData;
+        
+        const newPages = oldData.pages.map((page: Post[]) => 
+          page.filter(post => post.id !== deletedPostId)
+        );
+        
+        return {
+          ...oldData,
+          pages: newPages,
+        };
       });
       
       // Invalidate all post-related queries
@@ -163,11 +185,9 @@ export const useCreateReaction = () => {
     mutationFn: ({ postId, reaction }: { postId: string; reaction: string }) =>
       service.createReaction(postId, reaction),
     onSuccess: (_, { postId }) => {
-      // Invalidate all queries that might contain this post
+      // Invalidate all queries that might contain this post (including infinite queries)
       queryClient.invalidateQueries({ queryKey: ['posts'] });
       queryClient.invalidateQueries({ queryKey: ['post', postId] });
-      queryClient.invalidateQueries({ queryKey: ['posts', 'following'] });
-      queryClient.invalidateQueries({ queryKey: ['posts', 'profile'] });
     },
     onError: (error) => {
       console.error('Failed to create reaction:', error);
@@ -185,15 +205,51 @@ export const useDeleteReaction = () => {
     mutationFn: ({ postId, reactionType }: { postId: string; reactionType: string }) => 
       service.deleteReactionByPost(postId, reactionType),
     onSuccess: (_, { postId }) => {
-      // Invalidate all queries that might contain this post
+      // Invalidate all queries that might contain this post (including infinite queries)
       queryClient.invalidateQueries({ queryKey: ['posts'] });
       queryClient.invalidateQueries({ queryKey: ['post', postId] });
-      queryClient.invalidateQueries({ queryKey: ['posts', 'following'] });
-      queryClient.invalidateQueries({ queryKey: ['posts', 'profile'] });
     },
     onError: (error) => {
       console.error('Failed to delete reaction:', error);
       showError('Sucedió un error al eliminar la reacción. Por favor, inténtalo de nuevo.');
     },
+  });
+};
+
+export const useGetInfinitePosts = () => {
+  const service = useHttpRequestService();
+  
+  return useInfiniteQuery({
+    queryKey: ['posts', 'infinite'],
+    queryFn: ({ pageParam = undefined }) => service.getPaginatedPosts(10, undefined, pageParam),
+    initialPageParam: undefined,
+    getNextPageParam: (lastPage, allPages) => {
+      // If the last page has fewer than 10 posts, we've reached the end
+      if (!lastPage || lastPage.length < 10) {
+        return undefined;
+      }
+      // Use the ID of the last post in the current page as the 'after' parameter for the next page
+      return lastPage[lastPage.length - 1].id;
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+};
+
+export const useGetInfiniteFollowingPosts = () => {
+  const service = useHttpRequestService();
+  
+  return useInfiniteQuery({
+    queryKey: ['posts', 'following', 'infinite'],
+    queryFn: ({ pageParam = undefined }) => service.getPaginatedFollowingPosts(10, undefined, pageParam),
+    initialPageParam: undefined,
+    getNextPageParam: (lastPage, allPages) => {
+      // If the last page has fewer than 10 posts, we've reached the end
+      if (!lastPage || lastPage.length < 10) {
+        return undefined;
+      }
+      // Use the ID of the last post in the current page as the 'after' parameter for the next page
+      return lastPage[lastPage.length - 1].id;
+    },
+    staleTime: 2 * 60 * 1000, // 2 minutes
   });
 };

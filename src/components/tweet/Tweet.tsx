@@ -25,8 +25,9 @@ const Tweet = ({post}: TweetProps) => {
   const navigate = useNavigate();
   const { currentUser } = useCurrentUser();
   
-  // Use React Query for post images
-  const { data: postImages, isLoading: imagesLoading } = useGetPostImages(post.id);
+  // Only fetch post images if the post indicates it has images
+  const hasImages = post.images && post.images.length > 0;
+  const { data: postImages, isLoading: imagesLoading } = useGetPostImages(hasImages ? post.id : "");
   const createReactionMutation = useCreateReaction();
   const deleteReactionMutation = useDeleteReaction();
 

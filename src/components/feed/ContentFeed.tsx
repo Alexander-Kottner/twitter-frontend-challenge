@@ -1,19 +1,54 @@
-import React, { useState } from "react";
-import Feed from "./Feed";
-import { useGetPosts, useGetFollowingPosts } from "../../hooks/usePosts";
+import React from "react";
+import InfiniteFeed from "./InfiniteFeed";
+import { useGetInfinitePosts, useGetInfiniteFollowingPosts } from "../../hooks/usePosts";
 
 interface ContentFeedProps {
   activeTab?: 'all' | 'following';
 }
 
 const ContentFeed = ({ activeTab = 'all' }: ContentFeedProps) => {
-  const { data: allPosts, isLoading: allPostsLoading } = useGetPosts();
-  const { data: followingPosts, isLoading: followingPostsLoading } = useGetFollowingPosts();
+  // Use infinite queries for the feed
+  const {
+    data: infiniteAllPosts,
+    isLoading: infiniteAllPostsLoading,
+    hasNextPage: hasNextAllPage,
+    fetchNextPage: fetchNextAllPage,
+    isFetchingNextPage: isFetchingNextAllPage,
+    error: allPostsError,
+  } = useGetInfinitePosts();
 
-  const posts = activeTab === 'following' ? followingPosts : allPosts;
-  const loading = activeTab === 'following' ? followingPostsLoading : allPostsLoading;
+  const {
+    data: infiniteFollowingPosts,
+    isLoading: infiniteFollowingPostsLoading,
+    hasNextPage: hasNextFollowingPage,
+    fetchNextPage: fetchNextFollowingPage,
+    isFetchingNextPage: isFetchingNextFollowingPage,
+    error: followingPostsError,
+  } = useGetInfiniteFollowingPosts();
 
-  return <Feed posts={posts || []} loading={loading} />;
+  if (activeTab === 'following') {
+    return (
+      <InfiniteFeed
+        data={infiniteFollowingPosts}
+        isLoading={infiniteFollowingPostsLoading}
+        hasNextPage={hasNextFollowingPage || false}
+        fetchNextPage={fetchNextFollowingPage}
+        isFetchingNextPage={isFetchingNextFollowingPage}
+        error={followingPostsError}
+      />
+    );
+  }
+
+  return (
+    <InfiniteFeed
+      data={infiniteAllPosts}
+      isLoading={infiniteAllPostsLoading}
+      hasNextPage={hasNextAllPage || false}
+      fetchNextPage={fetchNextAllPage}
+      isFetchingNextPage={isFetchingNextAllPage}
+      error={allPostsError}
+    />
+  );
 };
 
 export default ContentFeed;
