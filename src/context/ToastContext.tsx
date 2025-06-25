@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import Toast, { ToastType } from '../components/toast/Toast';
+import { ToastType } from '../components/toast/Toast';
+import ToastPortal from '../components/toast/ToastPortal';
 
 interface ToastContextType {
   showToast: (message: string, type: ToastType) => void;
@@ -45,13 +46,12 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
     <ToastContext.Provider value={{ showToast, showError, showSuccess }}>
       {children}
       {toasts.map(toast => (
-        <div key={toast.id} onClick={() => removeToast(toast.id)}>
-          <Toast
-            message={toast.message}
-            type={toast.type}
-            show={true}
-          />
-        </div>
+        <ToastPortal
+          key={toast.id}
+          message={toast.message}
+          type={toast.type}
+          onClose={() => removeToast(toast.id)}
+        />
       ))}
     </ToastContext.Provider>
   );
