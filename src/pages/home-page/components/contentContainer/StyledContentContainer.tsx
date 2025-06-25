@@ -6,8 +6,9 @@ export const StyledContentContainer = styled.div`
   align-items: flex-start;
   width: 100%;
   flex: 2;
-  height: 100%;
+  height: 100vh;
   border-right: 1px solid ${(props) => props.theme.colors.containerLine};
+  overflow: hidden; /* Prevent this container from scrolling */
 
   .tweet-box-container {
     width: 100%;

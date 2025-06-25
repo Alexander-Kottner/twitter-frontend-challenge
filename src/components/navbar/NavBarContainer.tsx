@@ -11,6 +11,9 @@ export const StyledNavBarContainer = styled.div`
     border-right: 1px solid var(--grayscale-container-line, #f0f3f4);
     box-sizing: border-box;
     z-index: 1;
+    height: 100vh;
+    overflow: hidden; /* Prevent sidebar from scrolling */
+    
     .icon {
         display: flex;
         width: 32px;
@@ -36,12 +39,12 @@ export const StyledNavBarContainer = styled.div`
         gap: 16px;
         border-right: 1px solid var(--grayscale-container-line, #f0f3f4);
         margin-left: 2.5%;
-
     }
 
     @media (max-width: 600px) {
         background: ${(props) => props.theme.background};
         max-height: 56px;
+        height: 56px;
         flex-direction: row;
         position: fixed;
         bottom: 0;
