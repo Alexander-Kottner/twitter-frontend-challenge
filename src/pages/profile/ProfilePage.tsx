@@ -6,7 +6,8 @@ import {StyledH5} from "../../components/common/text";
 import {ButtonVariant, ButtonSize} from "../../components/button/StyledButton";
 import Button from "../../components/button/Button";
 import Modal from "../../components/modal/Modal";
-import {useGetProfile, useFollowUser, useUnfollowUser, useGetCurrentUser, useDeleteProfile} from "../../hooks/useUsers";
+import {useGetProfile, useFollowUser, useUnfollowUser, useDeleteProfile} from "../../hooks/useUsers";
+import {useCurrentUser} from "../../hooks/useAuth";
 import ProfileInfo from "./ProfileInfo";
 import ProfileFeed from "../../components/feed/ProfileFeed";
 
@@ -21,7 +22,7 @@ const ProfilePage = () => {
 
   const {t} = useTranslation();
   const {id} = useParams<{ id: string }>();
-  const {data: currentUser} = useGetCurrentUser();
+  const {currentUser} = useCurrentUser();
 
   // Use profileView which calls the existing /api/user/:id endpoint
   const {data: profileView, error: profileError} = useGetProfile(id!);

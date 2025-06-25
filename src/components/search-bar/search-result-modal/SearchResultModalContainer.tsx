@@ -12,12 +12,5 @@ export const StyledSearchResultModalContainer = styled.div`
   border-radius: 16px;
   background: ${(props) => props.theme.background};
   box-shadow: 0 0 24px 0 rgba(0, 0, 0, 0.25);
-  position: absolute;
-  top: 2px;
   transition: 0.3s ease-in-out;
-  background: ${(props) => props.theme.background};
 `;
-
-// interface SearchResultModalContainerProps {
-//     short?: boolean;
-// }

@@ -8,7 +8,7 @@ import logo from "../../../assets/logo.png";
 import {useNavigate} from "react-router-dom";
 import SwitchButton from "../../switch/SwitchButton";
 import {StyledP} from "../../common/text";
-import {useGetCurrentUser} from "../../../hooks/useUsers";
+import {useCurrentUser} from "../../../hooks/useAuth";
 import {performLogout} from "../../../service/HttpRequestService";
 
 interface LogoutPromptProps {
@@ -20,7 +20,7 @@ const LogoutPrompt = ({ show }: LogoutPromptProps) => {
   const [showModal, setShowModal] = useState<boolean>(false);
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
-  const { data: user } = useGetCurrentUser();
+  const { currentUser: user } = useCurrentUser();
 
 
   const handleClick = () => {

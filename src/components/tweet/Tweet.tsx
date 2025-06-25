@@ -11,7 +11,7 @@ import DeletePostModal from "./delete-post-modal/DeletePostModal";
 import ImageContainer from "./tweet-image/ImageContainer";
 import CommentModal from "../comment/comment-modal/CommentModal";
 import {useNavigate} from "react-router-dom";
-import {useCurrentUser} from "../../hooks/useCurrentUser";
+import {useCurrentUser} from "../../hooks/useAuth";
 import { useGetPostImages, useCreateReaction, useDeleteReaction } from "../../hooks/usePosts";
 
 interface TweetProps {

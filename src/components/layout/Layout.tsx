@@ -1,7 +1,5 @@
 import React from "react";
 import { RouterProvider } from "react-router-dom";
-import { Provider } from "react-redux";
-import { PersistGate } from 'redux-persist/integration/react';
 import { ThemeProvider } from "styled-components";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
@@ -9,10 +7,8 @@ import i18next from "i18next";
 import { I18nextProvider, initReactI18next } from "react-i18next";
 import global_en from "../../translations/en/global.json";
 import global_es from "../../translations/es/global.json";
-import { store, persistor } from "../../redux/store";
 import { LightTheme } from "../../util/LightTheme";
 import { ROUTER } from "./Router";
-import Loader from "../loader/Loader";
 import { setGlobalQueryClient } from "../../service/HttpRequestService";
 import { ToastProvider } from "../../context/ToastContext";
 
@@ -57,18 +53,14 @@ const ThemeWrapper = ({ children }: { children: React.ReactNode }) => {
 export const Layout = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <Provider store={store}>
-        <ThemeWrapper>
-          <PersistGate loading={<Loader />} persistor={persistor}>
-            <I18nextProvider i18n={i18next}>
-              <ToastProvider>
-                <RouterProvider router={ROUTER} />
-                <ReactQueryDevtools initialIsOpen={false} />
-              </ToastProvider>
-            </I18nextProvider>
-          </PersistGate>
-        </ThemeWrapper>
-      </Provider>
+      <ThemeWrapper>
+        <I18nextProvider i18n={i18next}>
+          <ToastProvider>
+            <RouterProvider router={ROUTER} />
+            <ReactQueryDevtools initialIsOpen={false} />
+          </ToastProvider>
+        </I18nextProvider>
+      </ThemeWrapper>
     </QueryClientProvider>
   );
 };

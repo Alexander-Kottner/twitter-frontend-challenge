@@ -9,8 +9,7 @@ import LabeledInput from "../../../components/labeled-input/LabeledInput";
 import Button from "../../../components/button/Button";
 import { ButtonVariant, ButtonSize } from "../../../components/button/StyledButton";
 import { StyledH3 } from "../../../components/common/text";
-import { useAppDispatch } from "../../../redux/hooks";
-import { setCurrentUser } from "../../../redux/user";
+import { useQueryClient } from '@tanstack/react-query';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { StyledErrorMessage } from "../../../components/common/ValidationStyles";
@@ -53,7 +52,7 @@ const SignUpPage = () => {
   const httpRequestService = useHttpRequestService();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const dispatch = useAppDispatch();
+  const queryClient = useQueryClient();
 
   const handleSubmit = async (values: SignUpData, { setFieldError }: any) => {
     setLoading(true);
@@ -61,12 +60,11 @@ const SignUpPage = () => {
     try {
       const { confirmPassword, ...requestData } = values;
 
-      // First, sign up and store the token
+      // Sign up and store the token
       await httpRequestService.signUp(requestData);
 
-      // Then fetch the user data to populate Redux state
-      const userData = await httpRequestService.me();
-      dispatch(setCurrentUser(userData));
+      // Invalidate user query to refetch user data
+      queryClient.invalidateQueries({ queryKey: ['user', 'me'] });
 
       // Show success toast
       setShowSuccessToast(true);

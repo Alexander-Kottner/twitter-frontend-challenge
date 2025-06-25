@@ -17,7 +17,7 @@ import {StyledIconContainer} from "./IconContainer";
 import {StyledNavItemsContainer} from "./navItem/NavItemsContainer";
 import {StyledP} from "../common/text";
 import ProfileLogoutPrompt from "../profile-logout/ProfileLogoutPrompt";
-import {useCurrentUser} from "../../hooks/useCurrentUser";
+import {useCurrentUser} from "../../hooks/useAuth";
 
 const NavBar = () => {
   const location = useLocation();

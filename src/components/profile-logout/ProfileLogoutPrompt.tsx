@@ -7,7 +7,7 @@ import React, {useState, useEffect, useRef} from "react";
 import icon from "../../assets/icon.jpg";
 import {StyledP} from "../common/text";
 import {StyledContainer} from "../common/Container";
-import {useGetCurrentUser} from "../../hooks/useUsers";
+import {useCurrentUser} from "../../hooks/useAuth";
 
 
 interface ProfileLogoutPromptProps {
@@ -17,7 +17,7 @@ interface ProfileLogoutPromptProps {
 
 const ProfileLogoutPrompt = ({margin, direction}: ProfileLogoutPromptProps) => {
     const [logoutOpen, setLogoutOpen] = useState(false);
-    const { data: user } = useGetCurrentUser();
+    const { currentUser: user } = useCurrentUser();
     const componentRef = useRef<HTMLDivElement>(null);
 
     const handleLogout = () => {
